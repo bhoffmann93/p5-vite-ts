@@ -2,17 +2,20 @@
   "name": "p5-template",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open",
     "build": "tsc && vite build",
     "serve": "vite preview",
     "tsc": "tsc"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/p5": "^1.7.7",
-    "typescript": "^5.9.3",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
     "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
     "vite": "^7.2.2"
   },
   "dependencies": {
