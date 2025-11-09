@@ -2,7 +2,7 @@ import p5 from 'p5';
 
 import './style.css';
 
-const _app = new p5((p5Instance) => {
+const sketch = new p5((p5Instance) => {
   const p = p5Instance as unknown as p5;
 
   const x = 100;
