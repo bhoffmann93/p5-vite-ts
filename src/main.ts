@@ -2,8 +2,13 @@ import p5 from 'p5';
 
 import './style.css';
 
-const sketch = new p5((p5Instance) => {
-  const p = p5Instance as unknown as p5;
+const doThings = (name: string) => {
+  return name;
+};
+
+// eslint-disable-next-line
+const sketch = new p5((p5Instance: p5) => {
+  const p = p5Instance;
 
   const x = 100;
   const y = 100;

@@ -14,8 +14,11 @@ export default defineConfig([
       sourceType: 'module',
     },
     rules: {
+      'prefer-const': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
       'no-unused-expressions': 2,
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
     },
   },
 ]);
