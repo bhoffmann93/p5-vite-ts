@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
@@ -16,5 +16,5 @@
     "noImplicitAny": true,
     "strictNullChecks": true
   },
-  "include": ["./src", "node_modules/@types/p5/index.d.ts"]
+  "include": ["src"]
 }

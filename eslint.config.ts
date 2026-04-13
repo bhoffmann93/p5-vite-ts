@@ -4,20 +4,17 @@ import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
-  js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
-    languageOptions: {
-      globals: globals.browser,
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-    },
+    plugins: { js },
+    extends: ['js/recommended'],
+    languageOptions: { globals: globals.browser },
     rules: {
       'prefer-const': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'off',
       'no-unused-expressions': 2,
       'no-unused-vars': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
     },
   },

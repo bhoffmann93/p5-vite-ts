@@ -11,6 +11,7 @@ const cosVec3 = (v: number[]): number[] => {
   return [Math.cos(v[0]), Math.cos(v[1]), Math.cos(v[2])];
 };
 
+//https://iquilezles.org/articles/palettes/
 export const palette = (
   t: number,
   brightness: number[],
