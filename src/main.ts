@@ -2,6 +2,7 @@ import p5 from 'p5';
 
 import './style.css';
 
+//@ts-ignore
 const doThings = (name: string) => {
   return name;
 };
