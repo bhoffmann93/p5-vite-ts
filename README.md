@@ -5,7 +5,7 @@ simple starter for a p5 project
 - p5js 2 in [instance mode](https://p5js.org/examples/instance-mode-instantiation.html)
 - [Vite](https://vitejs.dev/) - build tool
 - [TypeScript](https://www.typescriptlang.org/) - language
-- [Tweakpane] (https://tweakpane.github.io/docs/) - GUI
+- [Tweakpane](https://tweakpane.github.io/docs/) - GUI
 - Several Util Functions
 
 ## Start a new project
