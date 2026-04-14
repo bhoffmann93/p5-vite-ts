@@ -110,6 +110,13 @@ export const dist = (x1: number, y1: number, x2: number, y2: number): number => 
   return Math.hypot(x2 - x1, y2 - y1);
 };
 
+//const [dirX, dirY] = angleNormal(theta)
+export const angleNormal = (angle: number): [number, number] => [-Math.sin(angle), Math.cos(angle)];
+export const angleDir = (angle: number): [number, number] => [Math.cos(angle), Math.sin(angle)];
+export const angleNormalInward = (angle: number): [number, number] => [Math.sin(angle), -Math.cos(angle)];
+export const angle = (x: number, y: number): number => Math.atan2(y, x);
+export const angleN = (x: number, y: number): number => Math.atan2(y, x) / TAU + 0.5;
+
 //Shaping
 export const smoothstep = (min: number, max: number, x: number): number => {
   const t = clamp((x - min) / (max - min), 0, 1);
