@@ -11,7 +11,7 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: { globals: globals.browser },
     rules: {
-      'prefer-const': 'warn',
+      'prefer-const': 'off',
       'no-unused-expressions': 2,
       'no-unused-vars': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
