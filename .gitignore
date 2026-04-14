@@ -39,6 +39,5 @@ coverage
 # Temporary files
 *.tgz
 *.tmp
-*
 
 *.local
