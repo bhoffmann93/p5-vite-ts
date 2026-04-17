@@ -1,6 +1,7 @@
 import p5 from 'p5';
 import { Pane } from 'tweakpane';
 import Stats from 'stats.js';
+import { timestamp } from './utils/utils';
 
 const stats = new Stats();
 stats.showPanel(0);
@@ -13,7 +14,9 @@ const params = {
 const pane = new Pane({ title: 'Controls' });
 pane.addBinding(params, 'color', { min: 0, max: 255, step: 1, label: 'fill' });
 
+let sketch: p5;
 new p5((p: p5) => {
+  sketch = p;
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
   };
@@ -39,5 +42,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'g') {
     pane.hidden = !pane.hidden;
     stats.dom.style.display = stats.dom.style.display === 'none' ? 'block' : 'none';
+  }
+  if (e.key === 's') {
+    sketch.saveCanvas(`${__GIT_BRANCH__}-${timestamp()}`, 'png');
   }
 });
