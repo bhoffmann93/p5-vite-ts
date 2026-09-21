@@ -1,49 +1,8 @@
-// Easing functions.
+// Easing curves: give one a number from 0 to 1, get a number from 0 to 1 back,
+// moved along a different path. See src/sketch.js for one in use, and
+// https://easings.net to see every curve drawn out.
 //
-// All easing functions only remap a time value, and all have the same
-// signature.
-//
-//     v = ease(t)
-//
-// Where `t` is typically a value between 0 and 1, and it returns a new float
-// that has been eased.
-//
-// So an easing function never knows about your sketch. It takes "how far
-// through am I" and answers "how far along should it look". That is all.
-//
-// HOW TO USE THEM
-//
-// 1. Import the ones you want, or the whole set:
-//
-//        import { Easings } from './lib/easings.js';
-//
-// 2. Make a `t` that runs from 0 to 1. A loop over 2 seconds at 60fps:
-//
-//        const t = (frameCount % 120) / 120;
-//
-// 3. Ease it, then use the result to move between two values:
-//
-//        const v = Easings.cubicInOut(t);
-//        textSize(lerp(20, 200, v));
-//
-// `lerp(from, to, v)` is the piece that does the real work: at v = 0 you get
-// `from`, at v = 1 you get `to`, and the easing decides how it travels between
-// them. Swap cubicInOut for bounceOut and the same two lines feel completely
-// different. That swap is the whole point — try several.
-//
-// A few notes:
-//
-//   * `linear` is no easing at all. Compare against it to feel what the
-//     others are doing.
-//   * `...In` starts slow. `...Out` ends slow. `...InOut` does both, and is
-//     usually the one that looks "right" for movement on screen.
-//   * back and elastic overshoot on purpose — they return values below 0 or
-//     above 1 partway through. Lovely for type that snaps into place, awkward
-//     for anything that must not go out of range.
-//
-// See every curve drawn out at https://easings.net
-//
-// Functions from the `eases` package by Matt DesLauriers (MIT), see LICENSES.md.
+// From the `eases` package by Matt DesLauriers (MIT), see LICENSES.md.
 
 const linear = (t) => t;
 

@@ -14,6 +14,7 @@
 import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { applyFont, defaultFont } from './lib/fonts.js';
+import { Easings } from './lib/easings.js';
 import { backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
@@ -43,7 +44,23 @@ window.draw = function draw() {
   fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
   noStroke();
 
-  textSize(params.textSize);
+  // An easing in use. Delete this block if you want the letter to hold still.
+  const timeInSeconds = millis() / 1000;
+
+  const biggestTextSize = params.textSize;
+  const smallestTextSize = params.textSize * 0.5;
+
+  //counts 0 to 1 over two seconds, then starts again at 0
+  const LOOP_SECONDS = 2;
+  const timeLoop01 = (timeInSeconds / LOOP_SECONDS) % 1;
+
+  const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
+
+  //the easing decides how the size travels between smallest and biggest
+  const timeEased = Easings.cubicInOut(timePingPong);
+
+  //try swapping cubicInOut above for bounceOut or elasticOut
+  textSize(lerp(smallestTextSize, biggestTextSize, timeEased));
   text(params.text, width / 2, height / 2);
 };
 
