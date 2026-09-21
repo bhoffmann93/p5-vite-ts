@@ -156,8 +156,9 @@ and `width` exactly as you would in Processing or any p5 tutorial, with no
 prefix. One catch: don't name a variable after a p5 function. A local called
 `background` hides `background()` and the next call to it will fail.
 
-The rest of `src/lib/` finds your fonts and saves your images. You can ignore
-it — with one exception worth knowing about:
+`src/lib/` is the rest of the tool: the control panel, font loading, image
+export and easing. You do not need it on day one, but it is yours to change,
+and building the tool means changing it.
 
 ### Easing
 
@@ -228,7 +229,7 @@ fonts/              <- your font files go here
 src/
   sketch.js         <- your code
   config.js         <- screenshot name and starting colours
-  lib/              <- plumbing, you can ignore this
+  lib/              <- the tool itself: panel, fonts, export, easing
 static/             <- images and other files used as-is
 ```
 

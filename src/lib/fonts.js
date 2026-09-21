@@ -1,13 +1,12 @@
-// Font discovery.
+// FINDING YOUR FONTS
 //
-// Every font file you drop into the `fonts/` folder shows up in the Font
-// dropdown automatically. There is no list to keep up to date.
+// Every font file you drop into the `fonts/` folder shows up in the font
+// dropdown by itself. There is no list to keep up to date.
 //
-// p5 only loads .otf and .ttf properly. .woff2 is matched here so that a file
-// isn't silently ignored, but it may fail to load — applyFont() logs that to
-// the console and falls back to the system font.
-//
-// You should not need to edit this file.
+// Use .otf or .ttf. Those are the two formats p5 loads properly. A .woff2 is
+// picked up here as well, so it is never silently missing from the dropdown,
+// but it may fail to load. If that happens you get a message in the browser
+// console and the sketch falls back to the system font.
 
 // Vite scans the fonts/ folder at build time and hands us a { path: url } map.
 // (This is why fonts/ lives at the project root and not inside static/ —
@@ -45,10 +44,12 @@ export const defaultFont = fontList.length > 0 ? fontList[0].url : SYSTEM_FONT;
 // overwrite a faster one the user picked afterwards.
 let pending = null;
 
-/**
- * Apply a font to the sketch. Pass a url from `fontOptions`, or SYSTEM_FONT.
- * Loading a font file is asynchronous, so this returns a promise.
- */
+// Switches the sketch to a different font. Give it one of the values from
+// `fontOptions` above.
+//
+// Reading a font file off disk takes a moment, which is why this is `async`
+// and why setup() says `await applyFont(...)`. Without the await, the first
+// frame would draw before the font arrived.
 export async function applyFont(value) {
   if (value === SYSTEM_FONT) {
     pending = SYSTEM_FONT;

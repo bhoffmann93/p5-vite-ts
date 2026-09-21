@@ -1,13 +1,15 @@
-// Saving images.
+// SAVING IMAGES
 //
-// Files are named after `screenshotName` in src/config.js, plus the date and
-// time, so two exports never overwrite each other.
+// Pressing 's' or clicking Export PNG lands here.
 //
-// You should not need to edit this file.
+// The file is named after `screenshotName` in src/config.js, followed by the
+// date and time, so two exports never overwrite each other. Change the line
+// in savePNG() if you want a different name or a different format.
 
 import { screenshotName } from '../config.js';
 
-// e.g. '260921-1408' -> 21 Sept 2026, 14:08
+// Builds the date-and-time part of the filename.
+// '260921-1408' means 21 September 2026, at 14:08.
 export const timestamp = () => {
   const now = new Date();
   const pad = (value) => String(value).padStart(2, '0');
@@ -20,7 +22,8 @@ export const timestamp = () => {
   return `${date}-${time}`;
 };
 
-/** Save the current canvas as a PNG into your Downloads folder. */
+// Saves whatever is on the canvas right now into your Downloads folder.
+// saveCanvas() is p5's own function. 'jpg' and 'webp' work here too.
 export function savePNG() {
   saveCanvas(`${screenshotName}-${timestamp()}`, 'png');
 }

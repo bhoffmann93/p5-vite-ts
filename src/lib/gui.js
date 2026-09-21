@@ -1,44 +1,47 @@
-// The control panel, built with lil-gui.
+// THE CONTROL PANEL
 // https://lil-gui.georgealways.com/
 //
-// To add your own control, add a value to `params` in src/sketch.js and then
-// add one line here. A few examples:
+// This is the second file you will work in. Every slider, dropdown and colour
+// picker in the corner of the screen is one line down below.
 //
-//   gui.add(params, 'speed', 0, 10, 0.1);        // slider: min, max, step
-//   gui.add(params, 'showGrid');                 // checkbox
-//   gui.add(params, 'easing', easingNames);      // dropdown
-//   gui.addColor(params, 'accent', 255);         // colour picker
+// Adding a control takes two steps:
+//   1. add the value to `params` in src/sketch.js
+//   2. add one line here
 //
-// You should not need to change anything else in this file.
+// lil-gui picks the kind of control from the value you give it:
+//
+//   gui.add(params, 'speed', 0, 10, 0.1);     a number  -> slider from 0 to 10, stepping 0.1
+//   gui.add(params, 'showGrid');              true/false -> checkbox
+//   gui.add(params, 'words');                 text      -> text field
+//   gui.add(params, 'easing', easingNames);   a list    -> dropdown
+//   gui.addColor(params, 'accent', 255);                -> colour picker
+//
+// Add .name('Label') when the property name is not what you want to read.
 
 import GUI from 'lil-gui';
 import { fontOptions } from './fonts.js';
 import { savePNG } from './export.js';
 
-/**
- * Build the control panel.
- *
- * @param {object}   opts.params        the values the sketch draws with
- * @param {Function} opts.onFontChange  called with the new font when it changes
- */
+// `params` is the object in src/sketch.js holding every value the sketch
+// draws with. `onFontChange` runs when someone picks a font from the dropdown.
 export function createGUI({ params, onFontChange }) {
   const gui = new GUI({ title: 'Controls' });
 
-  gui.add(params, 'text').name('text');
+  gui.add(params, 'text');
 
-  gui.add(params, 'font', fontOptions).name('font').onChange(onFontChange);
+  gui.add(params, 'font', fontOptions).onChange(onFontChange);
 
   gui.add(params, 'textSize', 8, 400, 1).name('size');
 
-  //the 255 tells lil-gui our { r, g, b } channels run 0-255, not 0-1
+  //the 255 says our r, g and b channels run to 255, not to 1
   gui.addColor(params, 'foregroundColor', 255).name('type colour');
 
   gui.addColor(params, 'backgroundColor', 255).name('background');
 
-  //lil-gui turns a function on an object into a button
+  //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');
 
-  //'g' hides the panel, so you can screenshot or record the canvas alone
+  //hiding the panel leaves a clean canvas to screenshot or record
   let visible = true;
   const toggle = () => {
     visible = !visible;
@@ -46,7 +49,7 @@ export function createGUI({ params, onFontChange }) {
   };
 
   window.addEventListener('keydown', (event) => {
-    //don't fire hotkeys while someone is typing into the text field
+    //without this, typing an s into the text field would save a screenshot
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       return;
     }

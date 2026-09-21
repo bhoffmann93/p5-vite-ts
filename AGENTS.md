@@ -67,7 +67,7 @@ static/             served at / — favicon lives here, not at the root
 LICENSES.md         third-party credits (eases/MIT, p5, lil-gui, Vite)
 src/
   config.js         screenshotName + starting RGB colours. Student-facing.
-  sketch.js         the only file students edit
+  sketch.js         where students start
   lib/
     fonts.js        font discovery + async loading
     gui.js          lil-gui panel and hotkeys

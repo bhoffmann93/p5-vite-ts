@@ -1,7 +1,8 @@
-// THIS IS YOUR FILE.
+// START HERE.
 //
-// Everything you make happens here. The files in src/lib/ are plumbing:
-// they build the control panel, find your fonts and save your images.
+// This is where your sketch lives. You will also end up in src/lib/gui.js,
+// because that is where the controls are built, and every tool needs
+// controls. Nothing in this project is off limits.
 //
 // Two things to know:
 //   setup()  runs once, at the start.
@@ -46,11 +47,11 @@ window.draw = function draw() {
   text(params.text, width / 2, height / 2);
 };
 
-//keeps the canvas filling the window when you resize it
 window.windowResized = function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 };
 
-// Below is the wiring that starts everything. You can ignore it.
+// Builds the control panel, then starts p5. p5 looks for the setup() and
+// draw() you defined above and runs them.
 createGUI({ params, onFontChange: applyFont });
 new p5();
