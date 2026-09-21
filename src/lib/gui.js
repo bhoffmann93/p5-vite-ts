@@ -1,16 +1,17 @@
-// The control panel, built with Tweakpane.
+// The control panel, built with lil-gui.
+// https://lil-gui.georgealways.com/
 //
 // To add your own control, add a value to `params` in src/sketch.js and then
 // add one line here. A few examples:
 //
-//   pane.addBinding(params, 'speed',   { min: 0, max: 10, step: 0.1 });
-//   pane.addBinding(params, 'showGrid');                 // checkbox
-//   pane.addBinding(params, 'accent');                   // colour picker
-//   pane.addBinding(params, 'easing', { options: ... }); // dropdown
+//   gui.add(params, 'speed', 0, 10, 0.1);        // slider: min, max, step
+//   gui.add(params, 'showGrid');                 // checkbox
+//   gui.add(params, 'easing', easingNames);      // dropdown
+//   gui.addColor(params, 'accent', 255);         // colour picker
 //
 // You should not need to change anything else in this file.
 
-import { Pane } from 'tweakpane';
+import GUI from 'lil-gui';
 import { fontOptions } from './fonts.js';
 import { savePNG } from './export.js';
 
@@ -19,29 +20,29 @@ import { savePNG } from './export.js';
  *
  * @param {object}   opts.params        the values the sketch draws with
  * @param {Function} opts.onFontChange  called with the new font when it changes
- * @param {Function} opts.getSketch     returns the p5 instance (for exporting)
  */
-export function createGUI({ params, onFontChange, getSketch }) {
-  const pane = new Pane({ title: 'Controls' });
+export function createGUI({ params, onFontChange }) {
+  const gui = new GUI({ title: 'Controls' });
 
-  pane.addBinding(params, 'text', { label: 'text' });
+  gui.add(params, 'text').name('text');
 
-  pane
-    .addBinding(params, 'font', { label: 'font', options: fontOptions })
-    .on('change', (event) => onFontChange(event.value));
+  gui.add(params, 'font', fontOptions).name('font').onChange(onFontChange);
 
-  pane.addBinding(params, 'textSize', { label: 'size', min: 8, max: 400, step: 1 });
+  gui.add(params, 'textSize', 8, 400, 1).name('size');
 
-  //an { r, g, b } object gets a colour picker, same as a hex string would
-  pane.addBinding(params, 'foregroundColor', { label: 'type colour' });
+  //the 255 tells lil-gui our { r, g, b } channels run 0-255, not 0-1
+  gui.addColor(params, 'foregroundColor', 255).name('type colour');
 
-  pane.addBinding(params, 'backgroundColor', { label: 'background' });
+  gui.addColor(params, 'backgroundColor', 255).name('background');
 
-  pane.addButton({ title: 'Export PNG' }).on('click', () => savePNG(getSketch()));
+  //lil-gui turns a function on an object into a button
+  gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');
 
   //'g' hides the panel, so you can screenshot or record the canvas alone
+  let visible = true;
   const toggle = () => {
-    pane.hidden = !pane.hidden;
+    visible = !visible;
+    gui.show(visible);
   };
 
   window.addEventListener('keydown', (event) => {
@@ -50,8 +51,8 @@ export function createGUI({ params, onFontChange, getSketch }) {
       return;
     }
     if (event.key === 'g') toggle();
-    if (event.key === 's') savePNG(getSketch());
+    if (event.key === 's') savePNG();
   });
 
-  return pane;
+  return gui;
 }

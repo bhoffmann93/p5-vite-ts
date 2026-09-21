@@ -19,14 +19,14 @@
 //
 // 2. Make a `t` that runs from 0 to 1. A loop over 2 seconds at 60fps:
 //
-//        const t = (p.frameCount % 120) / 120;
+//        const t = (frameCount % 120) / 120;
 //
 // 3. Ease it, then use the result to move between two values:
 //
 //        const v = Easings.cubicInOut(t);
-//        p.textSize(p.lerp(20, 200, v));
+//        textSize(lerp(20, 200, v));
 //
-// `p.lerp(from, to, v)` is the piece that does the real work: at v = 0 you get
+// `lerp(from, to, v)` is the piece that does the real work: at v = 0 you get
 // `from`, at v = 1 you get `to`, and the easing decides how it travels between
 // them. Swap cubicInOut for bounceOut and the same two lines feel completely
 // different. That swap is the whole point — try several.

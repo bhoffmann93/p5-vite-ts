@@ -47,7 +47,7 @@ Installed via `npm install`, not included in this repository.
 | Library                                        | Licence  |                               |
 | ---------------------------------------------- | -------- | ----------------------------- |
 | [p5.js](https://p5js.org)                      | LGPL-2.1 | the drawing library           |
-| [Tweakpane](https://tweakpane.github.io/docs/) | MIT      | the control panel             |
+| [lil-gui](https://lil-gui.georgealways.com) | MIT | the control panel |
 | [Vite](https://vite.dev)                       | MIT      | the dev server and build tool |
 
 ---

@@ -49,21 +49,21 @@ let pending = null;
  * Apply a font to the sketch. Pass a url from `fontOptions`, or SYSTEM_FONT.
  * Loading a font file is asynchronous, so this returns a promise.
  */
-export async function applyFont(p, value) {
+export async function applyFont(value) {
   if (value === SYSTEM_FONT) {
     pending = SYSTEM_FONT;
-    p.textFont(SYSTEM_FONT);
+    textFont(SYSTEM_FONT);
     return;
   }
 
   pending = value;
   try {
-    const font = await p.loadFont(value);
-    // Someone picked a different font while this one was loading — drop it.
+    const font = await loadFont(value);
+    //someone picked a different font while this one was loading, so drop it
     if (pending !== value) return;
-    p.textFont(font);
-  } catch (err) {
-    console.error(`Could not load font: ${value}`, err);
-    if (pending === value) p.textFont(SYSTEM_FONT);
+    textFont(font);
+  } catch (error) {
+    console.error(`Could not load font: ${value}`, error);
+    if (pending === value) textFont(SYSTEM_FONT);
   }
 }

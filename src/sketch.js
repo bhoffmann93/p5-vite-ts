@@ -28,39 +28,29 @@ const params = {
   backgroundColor,
 };
 
-let sketch;
+window.setup = async function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textAlign(CENTER, CENTER);
 
-createGUI({
-  params,
-  onFontChange: (value) => applyFont(sketch, value),
-  getSketch: () => sketch,
-});
+  //loading a font takes a moment, so we wait for it before drawing
+  await applyFont(params.font);
+};
 
-new p5((p) => {
-  sketch = p;
+window.draw = function draw() {
+  background(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b);
 
-  p.setup = async () => {
-    p.createCanvas(p.windowWidth, p.windowHeight);
-    p.textAlign(p.CENTER, p.CENTER);
+  fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  noStroke();
 
-    //loading a font takes a moment, so we wait for it before drawing
-    await applyFont(p, params.font);
-  };
+  textSize(params.textSize);
+  text(params.text, width / 2, height / 2);
+};
 
-  p.draw = () => {
-    const background = params.backgroundColor;
-    p.background(background.r, background.g, background.b);
+//keeps the canvas filling the window when you resize it
+window.windowResized = function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+};
 
-    const foreground = params.foregroundColor;
-    p.fill(foreground.r, foreground.g, foreground.b);
-    p.noStroke();
-
-    p.textSize(params.textSize);
-    p.text(params.text, p.width / 2, p.height / 2);
-  };
-
-  //keeps the canvas filling the window when you resize it
-  p.windowResized = () => {
-    p.resizeCanvas(p.windowWidth, p.windowHeight);
-  };
-});
+// Below is the wiring that starts everything. You can ignore it.
+createGUI({ params, onFontChange: applyFont });
+new p5();

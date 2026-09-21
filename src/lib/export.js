@@ -21,6 +21,6 @@ export const timestamp = () => {
 };
 
 /** Save the current canvas as a PNG into your Downloads folder. */
-export function savePNG(sketch) {
-  sketch.saveCanvas(`${screenshotName}-${timestamp()}`, 'png');
+export function savePNG() {
+  saveCanvas(`${screenshotName}-${timestamp()}`, 'png');
 }

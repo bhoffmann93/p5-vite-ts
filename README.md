@@ -151,6 +151,11 @@ To add your own control to the panel, add a value to `params` in
 `src/sketch.js`, then add one line in `src/lib/gui.js`. There are examples in
 the comments at the top of that file.
 
+The sketch runs in p5's **global mode**, which means you write `background()`
+and `width` exactly as you would in Processing or any p5 tutorial, with no
+prefix. One catch: don't name a variable after a p5 function. A local called
+`background` hides `background()` and the next call to it will fail.
+
 The rest of `src/lib/` finds your fonts and saves your images. You can ignore
 it — with one exception worth knowing about:
 
@@ -163,9 +168,9 @@ always looks better than movement that doesn't.
 ```js
 import { Easings } from './lib/easings.js';
 
-const t = (p.frameCount % 120) / 120;        // 0 -> 1, over 2 seconds
+const t = (frameCount % 120) / 120;        // 0 -> 1, over 2 seconds
 const v = Easings.cubicInOut(t);
-p.textSize(p.lerp(20, 200, v));
+textSize(lerp(20, 200, v));
 ```
 
 The file's comments explain it properly, and [easings.net](https://easings.net)
