@@ -81,6 +81,14 @@ prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 
 ## Things that will bite you
 
+**The build step stays.** Students run `npm install` and `npm run dev`. Do not
+propose replacing this with CDN script tags, VS Code's Live Server, or the p5
+web editor: the point is that they work in a modern environment they will meet
+again. It is also load-bearing — `import.meta.glob` in `src/lib/fonts.js` is
+what makes a font appear in the dropdown when it is dropped into `fonts/`, and
+that is a Vite feature. Removing the bundler means hand-maintaining a list of
+filenames.
+
 **p5 runs in global mode.** `sketch.js` assigns `window.setup`, `window.draw`
 and `window.windowResized`, then calls `new p5()` with no argument. Never
 reintroduce instance mode: the `p.` prefix taxes every line of the trig-heavy

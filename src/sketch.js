@@ -57,10 +57,11 @@ window.draw = function draw() {
   const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
 
   //the easing decides how the size travels between smallest and biggest
-  const timeEased = Easings.cubicInOut(timePingPong);
+  const timeEased = Easings.backInOut(timePingPong);
 
   //try swapping cubicInOut above for bounceOut or elasticOut
-  textSize(lerp(smallestTextSize, biggestTextSize, timeEased));
+  const sizeText = lerp(smallestTextSize, biggestTextSize, timeEased);
+  textSize(sizeText);
   text(params.text, width / 2, height / 2);
 };
 
