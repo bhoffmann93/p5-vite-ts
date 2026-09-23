@@ -17,5 +17,9 @@ export const startingFont = 'Inter-Black';
 // The text the sketch opens with. You can change it in the panel while it runs.
 export const startingText = 'aA';
 
+// The width and height of the grid in pixels. It sits in the middle of the
+// window, whatever the window's size.
+export const gridSize = 800;
+
 export const backgroundColor = { r: 20, g: 20, b: 20 };
 export const foregroundColor = { r: 250, g: 250, b: 250 };
