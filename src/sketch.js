@@ -15,7 +15,19 @@ import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { findPointAt } from './lib/drag.js';
 import { applyFont, defaultFont, fontOptions, textToCurves } from './lib/font/index.js';
-import { startingText, showLetterCode, backgroundColor, foregroundColor } from './config.js';
+import {
+  startingText,
+  showCode,
+  showLetterCode,
+  showLegend,
+  codeSize,
+  labelSize,
+  curveStrokeWeight,
+  letterStrokeWeight,
+  letterStrokeColor,
+  backgroundColor,
+  foregroundColor,
+} from './config.js';
 
 // The values the control panel changes. The text and font are for the last
 // step, the letter.
@@ -58,9 +70,9 @@ const GRAB_RADIUS = 20;
 const TITLE_Y = 60;
 const TITLE_SIZE = 40;
 const NAVIGATION_Y = 105;
-const LABEL_SIZE = 16;
-const CODE_SIZE = 15;
-const CODE_LINE_HEIGHT = 22;
+
+// the code's line spacing, as a multiple of its text size
+const CODE_LINE_SPACING = 1.5;
 const CODE_X = 40;
 const CODE_Y = 170;
 const LEGEND_Y = 130;
@@ -142,7 +154,7 @@ function drawLerpStep(step) {
   }
 
   if (step.showCurve) {
-    drawCurveUpTo(points, t, roundColors[step.lerpRounds - 1]);
+    drawCurveUpTo(points, t, roundColors[step.lerpRounds - 1], curveStrokeWeight);
   }
 
   points.forEach((position, index) => {
@@ -192,10 +204,10 @@ function pointOnCurve(points, amount) {
   return rounds[rounds.length - 1][0];
 }
 
-function drawCurveUpTo(points, endAmount, curveColor) {
+function drawCurveUpTo(points, endAmount, curveColor, curveWeight) {
   noFill();
   stroke(curveColor.r, curveColor.g, curveColor.b);
-  strokeWeight(3);
+  strokeWeight(curveWeight);
   beginShape();
   for (let index = 0; index <= CURVE_RESOLUTION; index++) {
     const position = pointOnCurve(points, (index / CURVE_RESOLUTION) * endAmount);
@@ -220,7 +232,7 @@ function drawDot(position, dotColor, label, dotSize = POINT_SIZE) {
 
   if (uiFont) textFont(uiFont);
   textAlign(LEFT, BOTTOM);
-  textSize(LABEL_SIZE);
+  textSize(labelSize);
   text(label, position.x + POINT_SIZE, position.y - POINT_SIZE / 2);
 }
 
@@ -260,14 +272,15 @@ function drawLetterStep() {
 
   //the curves up to t last, so they sit in front of every point and line
   for (const points of curvesAsPoints) {
-    drawCurveUpTo(points, t, params.foregroundColor);
+    drawCurveUpTo(points, t, letterStrokeColor, letterStrokeWeight);
   }
 }
 
 function codeLines(step) {
   const lines = [{ code: `let t = ${nf(t, 1, 2)};`, color: params.foregroundColor, comment: ` // ${round(t * 100)}%` }];
 
-  //the letter step shows its code only when src/config.js says so
+  //src/config.js decides which steps show their code
+  if (!step.showLetter && !showCode) return [];
   if (step.showLetter) {
     if (!showLetterCode) return [];
     lines.push({ code: `let letters = textToCurves(font, '${params.text}', 0, 0);`, color: params.foregroundColor });
@@ -310,12 +323,14 @@ function curveCountLine() {
 // Which dot is which, above the code. The curve starts and ends on anchor
 // points; control points pull it towards them without it touching them.
 function drawLegend(step) {
+  if (!showLegend) return;
+
   const hasControlPoints = step.showLetter || step.pointCount > 2;
   const entries = [{ label: 'anchor point', dotColor: anchorColor }];
   if (hasControlPoints) entries.push({ label: 'control point', dotColor: controlPointColor });
 
   if (uiFont) textFont(uiFont);
-  textSize(LABEL_SIZE);
+  textSize(labelSize);
   textAlign(LEFT, CENTER);
 
   let x = CODE_X;
@@ -331,9 +346,9 @@ function drawCode(lines) {
   noStroke();
   textFont('monospace');
   textAlign(LEFT, TOP);
-  textSize(CODE_SIZE);
+  textSize(codeSize);
   lines.forEach((codeLine, index) => {
-    const y = CODE_Y + index * CODE_LINE_HEIGHT;
+    const y = CODE_Y + index * codeSize * CODE_LINE_SPACING;
     fill(codeLine.color.r, codeLine.color.g, codeLine.color.b);
     text(codeLine.code, CODE_X, y);
 
@@ -354,7 +369,7 @@ function drawTitle(step) {
   textSize(TITLE_SIZE);
   text(step.title, width / 2, TITLE_Y);
 
-  textSize(LABEL_SIZE);
+  textSize(labelSize);
   text(`←     ${stepIndex + 1} / ${STEPS.length}     →`, width / 2, NAVIGATION_Y);
 }
 
@@ -404,7 +419,7 @@ function drawSlider() {
   circle(knobX, sliderY(), KNOB_SIZE);
 
   if (uiFont) textFont(uiFont);
-  textSize(LABEL_SIZE);
+  textSize(labelSize);
   textAlign(CENTER, BOTTOM);
   text(`t = ${nf(t, 1, 2)}`, knobX, sliderY() - KNOB_SIZE);
 
