@@ -74,7 +74,7 @@ src/
     easings.js      31 easing curves from `eases`, v = ease(t)
     font/
       fonts.js      font discovery + async loading
-      curves.js     textToCurves(): contours of Bézier curves, drawing + handles
+      curves.js     textToCurves(): letters > contours > Bézier curves, drawing + handles
 ```
 
 Students edit `src/sketch.js` and `src/config.js`. When adding a feature,

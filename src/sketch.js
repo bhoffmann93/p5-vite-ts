@@ -15,7 +15,7 @@ import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { applyFont, defaultFont } from './lib/font/fonts.js';
 import { Easings } from './lib/easings.js';
-import { textToCurves, drawCurves } from './lib/font/curves.js';
+import { textToCurves, drawCurves, getLetterCenter } from './lib/font/curves.js';
 import { startingText, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
@@ -99,49 +99,52 @@ window.draw = function draw() {
 // moved first. With curves on you see only the line around every edge, to
 // study how the letter is built. With curves off the letter is filled in.
 function drawLetters() {
-  const contours = textToCurves(currentFont, params.text, width / 2, height / 2);
+  const letters = textToCurves(currentFont, params.text, width / 2, height / 2);
 
   //every anchor and handle is a plain { x, y }, so it can be moved before
   //drawing. The wobble sliders say how far, in pixels.
   const timeInSeconds = millis() / 1000;
 
-  //the middle of the text, which the anchors are pushed away from
-  const bounds = currentFont.textBounds(params.text, width / 2, height / 2);
-  const center = createVector(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
-
-  //anchors first. Each one moves along the arrow from the center out to
-  //itself, further out and back in again. sin() makes that a wave, and using
+  //anchors first. Each one moves along the arrow from the middle of its
+  //letter out to itself, further out and back in again. sin() makes that a wave, and using
   //the arrow's angle as the start of the wave spreads anchorWaves bulges
   //around the letter, which travel round over time.
   //
   //Like in Illustrator, an anchor's handles travel with it, so the curve stays
   //smooth. Each anchor is the end (`to`) of one curve and the start of the
   //next, so moving every curve's end moves every anchor once.
-  for (const contour of contours) {
-    contour.forEach((curve, curveIndex) => {
-      const nextCurve = contour[(curveIndex + 1) % contour.length];
+  for (const letter of letters) {
+    //measured before anything moves, so the middle stays put
+    const center = getLetterCenter(letter);
 
-      const outwards = p5.Vector.sub(createVector(curve.to.x, curve.to.y), center);
-      const wave = sin(outwards.heading() * params.anchorWaves + timeInSeconds * WAVE_SPEED);
-      outwards.setMag(wave * params.anchorWobble);
+    for (const contour of letter) {
+      contour.forEach((curve, curveIndex) => {
+        const nextCurve = contour[(curveIndex + 1) % contour.length];
 
-      const handleBefore = curve.controls[curve.controls.length - 1];
-      const handleAfter = nextCurve.controls[0];
-      for (const movingPoint of [curve.to, handleBefore, handleAfter]) {
-        if (!movingPoint) continue;
-        movingPoint.x += outwards.x;
-        movingPoint.y += outwards.y;
-      }
-    });
+        const outwards = p5.Vector.sub(createVector(curve.to.x, curve.to.y), center);
+        const wave = sin(outwards.heading() * params.anchorWaves + timeInSeconds * WAVE_SPEED);
+        outwards.setMag(wave * params.anchorWobble);
+
+        const handleBefore = curve.controls[curve.controls.length - 1];
+        const handleAfter = nextCurve.controls[0];
+        for (const movingPoint of [curve.to, handleBefore, handleAfter]) {
+          if (!movingPoint) continue;
+          movingPoint.x += outwards.x;
+          movingPoint.y += outwards.y;
+        }
+      });
+    }
   }
 
   //then the handles on their own, drifting with noise()
-  for (const contour of contours) {
-    for (const curve of contour) {
-      for (const handle of curve.controls) {
-        const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
-        handle.x += drift.x;
-        handle.y += drift.y;
+  for (const letter of letters) {
+    for (const contour of letter) {
+      for (const curve of contour) {
+        for (const handle of curve.controls) {
+          const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
+          handle.x += drift.x;
+          handle.y += drift.y;
+        }
       }
     }
   }
@@ -154,7 +157,7 @@ function drawLetters() {
     noStroke();
   }
   strokeWeight(1);
-  drawCurves(contours, { showHandles: params.showHandles });
+  drawCurves(letters, { showHandles: params.showHandles });
 }
 
 // How fast the anchor wave travels round the letter, in radians per second.

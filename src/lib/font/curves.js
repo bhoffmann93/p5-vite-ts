@@ -1,5 +1,7 @@
 // Splits text into its outlines, using the font's own curves.
 //
+//   letter    one character, as a list of its contours. A space has none,
+//             so spaces are left out.
 //   contour   one closed outline. An "o" has two: the outside and the hole.
 //   curve     one piece of a contour: a straight line, or a bend with one or
 //             two control points. Shaped { from, controls: [...], to }.
@@ -11,8 +13,8 @@
 // `to` is the very same point as the next curve's `from`, so moving one end
 // moves both, and the outline stays closed.
 //
-// textToCurves() hands back an array of contours, each an array of curves.
-// It is named after p5's textToPoints() and textToContours(), which give you
+// textToCurves() hands back an array of letters, each an array of contours,
+// each an array of curves. It is named after p5's textToPoints() and textToContours(), which give you
 // points along the outline instead of the curves themselves.
 //
 // This is p5 version 2, which reads fonts with Typr.js. Code online that reads
@@ -29,8 +31,49 @@ const handleColor = { r: 0, g: 200, b: 255 };
 // Reads the outlines of `str` as it would be drawn by text(str, x, y), using
 // whatever textSize() and textAlign() are set right now.
 export function textToCurves(font, str, x, y) {
-  const commands = font.textToPaths(str, x, y);
+  const contours = commandsToContours(font.textToPaths(str, x, y));
 
+  //p5 hands back every outline in one list, without saying which letter it
+  //belongs to. The outlines come in reading order, so we hand them out one
+  //letter at a time: each letter gets as many as it has when drawn on its
+  //own, 2 for "A", 1 for "L", 0 for a space.
+  const letters = [];
+  let nextContour = 0;
+  for (const character of str) {
+    const count = countContours(font, character);
+    letters.push(contours.slice(nextContour, nextContour + count));
+    nextContour += count;
+  }
+
+  //a font can melt two letters into one shape (a ligature, like "fi"), and
+  //then the counts no longer add up. Rather than hand out the wrong outlines,
+  //the whole text is then treated as one letter.
+  if (nextContour !== contours.length) return [contours];
+
+  return letters.filter((letter) => letter.length > 0);
+}
+
+// The middle of a letter: the center of the box around all its anchors.
+export function getLetterCenter(letter) {
+  const anchorsX = [];
+  const anchorsY = [];
+  for (const contour of letter) {
+    for (const curve of contour) {
+      anchorsX.push(curve.from.x);
+      anchorsY.push(curve.from.y);
+    }
+  }
+  return createVector((min(anchorsX) + max(anchorsX)) / 2, (min(anchorsY) + max(anchorsY)) / 2);
+}
+
+// How many closed outlines one character has on its own.
+function countContours(font, character) {
+  const commands = font.textToPaths(character, 0, 0);
+  return commands.filter(([type]) => type === 'M').length;
+}
+
+// Turns p5's list of pen moves into contours of curves.
+function commandsToContours(commands) {
   const contours = [];
   let contour = [];
   let start = null;
@@ -73,14 +116,16 @@ export function textToCurves(font, str, x, y) {
   return contours;
 }
 
-// Draws the whole text with the current fill() and stroke(). Every outline
-// goes into one shape as a contour, which is what cuts the holes out of
-// letters like "o" and "A" when there is a fill.
+// Draws the letters from textToCurves() with the current fill() and stroke().
+// Every outline goes into one shape as a contour, which is what cuts the
+// holes out of letters like "o" and "A" when there is a fill.
 //
 // Pass { showHandles: true } to also draw the Bézier handles: a square on
 // every anchor, a circle on every handle, and a line joining each handle to
 // its anchor. Their colors are set at the top of this file.
-export function drawCurves(contours, { showHandles = false } = {}) {
+export function drawCurves(letters, { showHandles = false } = {}) {
+  const contours = letters.flat();
+
   beginShape();
   for (const contour of contours) {
     if (contour.length === 0) continue;
