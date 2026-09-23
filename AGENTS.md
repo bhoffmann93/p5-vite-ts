@@ -13,7 +13,8 @@ Practical consequences:
 
 - **No TypeScript, no ESLint, no test framework.** These were deliberately
   removed. Do not reintroduce them or suggest doing so.
-- **Keep the dependency list tiny** (`p5`, `lil-gui`, `vite`).
+- **Keep the dependency list tiny** (`p5`, `lil-gui`, `vite`, and on the
+  `shader` branch `vite-plugin-glsl`).
   A new dependency is a new thing that can fail on a student's laptop.
 - Comments explain *why* in plain language. Keep that register.
 
@@ -90,6 +91,7 @@ prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 | Task | Use |
 | --- | --- |
 | The font's Bézier curves (anchors, handles), to draw or deform | `textToCurves(font, str, x, y)` then `drawCurves(letters, { showHandles })` |
+| Move an anchor and its handles together | `moveAnchor(contour, curveIndex, { x, y })` |
 | Points along the outlines, sorted by letter | `textToLetterContours(font, str, x, y, { sampleFactor })` |
 | The middle of a letter, e.g. to push points away from it | `getCenter(positions)` |
 | Shapes at even spacing along an outline, or moving along it | `placeAlongOutline(outline, spacing, offset)` gives `{ x, y, angle }` spots |
