@@ -74,6 +74,7 @@ src/
     export.js       timestamp() + savePNG()
     easings.js      31 easing curves from `eases`, v = ease(t)
     math.js         damp, parabola, cubicPulse, cubicPulseWrap (what p5 lacks)
+    drag.js         findPointAt(): which point is under the mouse
     font/
       index.js      re-exports everything below; sketches import from here
       fonts.js      font discovery + async loading

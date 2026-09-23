@@ -15,7 +15,7 @@ export const screenshotName = 'generative-typography';
 export const startingFont = 'Inter-Black';
 
 // The text the sketch opens with. You can change it in the panel while it runs.
-export const startingText = 'aA';
+export const startingText = 'O';
 
 export const backgroundColor = { r: 20, g: 20, b: 20 };
 export const foregroundColor = { r: 250, g: 250, b: 250 };
