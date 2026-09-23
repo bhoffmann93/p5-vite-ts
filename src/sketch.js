@@ -55,6 +55,9 @@ const roundColors = [
 
 const POINT_SIZE = 14;
 const LETTER_POINT_SIZE = 7;
+
+// the letter step's point colors keep this much of their saturation and brightness
+const LETTER_COLOR_STRENGTH = 0.8;
 const GRAB_RADIUS = 20;
 const TITLE_Y = 60;
 const TITLE_SIZE = 40;
@@ -241,30 +244,53 @@ function drawLetterStep() {
   textSize(params.textSize);
   const letters = textToCurves(currentFont, params.text, 0, 0);
 
+  const letterAnchorColor = dimColor(anchorColor, LETTER_COLOR_STRENGTH);
+  const letterControlPointColor = dimColor(controlPointColor, LETTER_COLOR_STRENGTH);
+  const letterRoundColors = roundColors.map((roundColor) => dimColor(roundColor, LETTER_COLOR_STRENGTH));
+
+  const curvesAsPoints = letters
+    .flat(2)
+    .map((curve) => [curve.from, ...curve.controls, curve.to].map((position) => createVector(position.x, position.y)));
+
   //every curve drawn like A, B, C and D in the steps before, only smaller:
-  //its points, its lerps at t, and the curve up to t
-  for (const curve of letters.flat(2)) {
-    const points = [curve.from, ...curve.controls, curve.to].map((position) => createVector(position.x, position.y));
+  //its points and its lerps at t
+  for (const points of curvesAsPoints) {
     const rounds = lerpRounds(points, t, points.length - 1);
 
     for (let roundIndex = 0; roundIndex < rounds.length - 1; roundIndex++) {
-      const lineStroke = roundIndex === 0 ? lineColor : roundColors[roundIndex - 1];
+      const lineStroke = roundIndex === 0 ? lineColor : letterRoundColors[roundIndex - 1];
       drawLines(rounds[roundIndex], lineStroke, 1);
     }
 
-    drawCurveUpTo(points, t, params.foregroundColor);
-
     points.forEach((position, index) => {
       const isAnchor = index === 0 || index === points.length - 1;
-      drawDot(position, isAnchor ? anchorColor : controlPointColor, '', LETTER_POINT_SIZE);
+      drawDot(position, isAnchor ? letterAnchorColor : letterControlPointColor, '', LETTER_POINT_SIZE);
     });
 
     for (let roundIndex = 1; roundIndex < rounds.length; roundIndex++) {
       for (const position of rounds[roundIndex]) {
-        drawDot(position, roundColors[roundIndex - 1], '', LETTER_POINT_SIZE);
+        drawDot(position, letterRoundColors[roundIndex - 1], '', LETTER_POINT_SIZE);
       }
     }
   }
+
+  //the curves up to t last, so they sit in front of every point and line
+  for (const points of curvesAsPoints) {
+    drawCurveUpTo(points, t, params.foregroundColor);
+  }
+}
+
+// The same color with its saturation and brightness scaled by `strength`.
+function dimColor(rgbColor, strength) {
+  push();
+  colorMode(RGB, 255);
+  const original = color(rgbColor.r, rgbColor.g, rgbColor.b);
+  colorMode(HSB, 360, 100, 100);
+  const dimmed = color(hue(original), saturation(original) * strength, brightness(original) * strength);
+  colorMode(RGB, 255);
+  const result = { r: red(dimmed), g: green(dimmed), b: blue(dimmed) };
+  pop();
+  return result;
 }
 
 function codeLines(step) {

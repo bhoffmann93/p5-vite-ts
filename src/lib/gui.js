@@ -30,7 +30,7 @@ export function createGUI({ params, onFontChange = () => {}, addControls = () =>
 
   if ('font' in params) gui.add(params, 'font', fontOptions).onChange(onFontChange);
 
-  if ('textSize' in params) gui.add(params, 'textSize', 100, 500, 1).name('size');
+  if ('textSize' in params) gui.add(params, 'textSize', 100, 1000, 1).name('size');
 
   //the 255 says our r, g and b channels run to 255, not to 1
   if ('foregroundColor' in params) gui.addColor(params, 'foregroundColor', 255).name('type color');
