@@ -46,6 +46,8 @@ export function createGUI({ params, onFontChange }) {
 
   gui.add(params, 'anchorWobble', 0, 100, 1).name('anchor wobble');
 
+  gui.add(params, 'anchorWaves', 1, 12, 1).name('anchor waves');
+
   gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
 
   gui.add(params, 'points', ['none', 'textToPoints', 'textToContours']);
