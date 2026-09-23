@@ -69,6 +69,8 @@ LICENSES.md         third-party credits (eases/MIT, p5, lil-gui, Vite)
 src/
   config.js         screenshotName + starting RGB colors. Student-facing.
   sketch.js         where students start
+  shader/           shader.vert + shader.frag: the fullscreen pass over sketchLayer
+    utils/          GLSL library copied unchanged from web-mapper; do not edit or comment
   lib/
     gui.js          lil-gui panel and hotkeys
     export.js       timestamp() + savePNG()
