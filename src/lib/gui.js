@@ -40,20 +40,36 @@ export function createGUI({ params, onFontChange }) {
 
   gui.add(params, 'animate');
 
-  gui.add(params, 'showCurves').name('curves');
+  //where the shape of the letters comes from, see drawFromCurves() and the
+  //two after it in src/sketch.js
+  const sampleFromControl = gui
+    .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
+    .name('sample from');
 
-  gui.add(params, 'showHandles').name('curve handles');
-
-  gui.add(params, 'anchorWobble', 0, 100, 1).name('anchor wobble');
-
-  gui.add(params, 'anchorWaves', 1, 12, 1).name('anchor waves');
-
-  gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
-
-  gui.add(params, 'points', ['none', 'textToPoints', 'textToContours']);
+  const fillControl = gui.add(params, 'fill');
 
   //how many points per pixel of outline, the option p5 calls sampleFactor
-  gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
+  const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
+
+  gui.add(params, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
+
+  gui.add(params, 'waveFrequency', 1, 12, 1).name('wave frequency');
+
+  const handlesControl = gui.add(params, 'showHandles').name('curve handles');
+
+  const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
+
+  //not every control works with every way of sampling, so the ones that would
+  //do nothing are greyed out. textToPoints cannot be filled, only curves have
+  //handles, and only the two p5 options use a sample factor.
+  const greyOutUnusedControls = (sampleFrom) => {
+    fillControl.enable(sampleFrom !== 'textToPoints');
+    sampleFactorControl.enable(sampleFrom !== 'curves');
+    handlesControl.enable(sampleFrom === 'curves');
+    handleWobbleControl.enable(sampleFrom === 'curves');
+  };
+  sampleFromControl.onChange(greyOutUnusedControls);
+  greyOutUnusedControls(params.sampleFrom);
 
   //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');

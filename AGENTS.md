@@ -75,6 +75,7 @@ src/
     font/
       fonts.js      font discovery + async loading
       curves.js     textToCurves(): letters > contours > Bézier curves, drawing + handles
+      letters.js    groupByLetter() + getCenter(), shared by curves and points
 ```
 
 Students edit `src/sketch.js` and `src/config.js`. When adding a feature,

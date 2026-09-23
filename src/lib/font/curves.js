@@ -21,6 +21,8 @@
 // `font.font` and `glyph.getPath()` is for p5 version 1 and opentype.js, and
 // will not work here.
 
+import { groupByLetter } from './letters.js';
+
 // How big the squares and circles of the handles are drawn, in pixels.
 const HANDLE_DOT_SIZE = 6;
 
@@ -32,44 +34,7 @@ const handleColor = { r: 0, g: 200, b: 255 };
 // whatever textSize() and textAlign() are set right now.
 export function textToCurves(font, str, x, y) {
   const contours = commandsToContours(font.textToPaths(str, x, y));
-
-  //p5 hands back every outline in one list, without saying which letter it
-  //belongs to. The outlines come in reading order, so we hand them out one
-  //letter at a time: each letter gets as many as it has when drawn on its
-  //own, 2 for "A", 1 for "L", 0 for a space.
-  const letters = [];
-  let nextContour = 0;
-  for (const character of str) {
-    const count = countContours(font, character);
-    letters.push(contours.slice(nextContour, nextContour + count));
-    nextContour += count;
-  }
-
-  //a font can melt two letters into one shape (a ligature, like "fi"), and
-  //then the counts no longer add up. Rather than hand out the wrong outlines,
-  //the whole text is then treated as one letter.
-  if (nextContour !== contours.length) return [contours];
-
-  return letters.filter((letter) => letter.length > 0);
-}
-
-// The middle of a letter: the center of the box around all its anchors.
-export function getLetterCenter(letter) {
-  const anchorsX = [];
-  const anchorsY = [];
-  for (const contour of letter) {
-    for (const curve of contour) {
-      anchorsX.push(curve.from.x);
-      anchorsY.push(curve.from.y);
-    }
-  }
-  return createVector((min(anchorsX) + max(anchorsX)) / 2, (min(anchorsY) + max(anchorsY)) / 2);
-}
-
-// How many closed outlines one character has on its own.
-function countContours(font, character) {
-  const commands = font.textToPaths(character, 0, 0);
-  return commands.filter(([type]) => type === 'M').length;
+  return groupByLetter(font, str, contours);
 }
 
 // Turns p5's list of pen moves into contours of curves.
