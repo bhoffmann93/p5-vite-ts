@@ -1,8 +1,7 @@
 // START HERE.
 //
-// This is where your sketch lives. You will also end up in src/lib/gui.js,
-// because that is where the controls are built, and every tool needs
-// controls. Nothing in this project is off limits.
+// This is where your sketch lives, controls included (addControls() at the
+// bottom). Nothing in this project is off limits.
 //
 // Two things to know:
 //   setup()  runs once, at the start.
@@ -29,7 +28,7 @@ import {
 import { startingText, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
-// in src/lib/gui.js to give it a slider or a checkbox.
+// in addControls() at the bottom of this file to give it a slider or a checkbox.
 //
 // The colors start at whatever you set in src/config.js, and are { r, g, b }
 // objects, each channel a number from 0 to 255.
@@ -290,7 +289,49 @@ window.windowResized = function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 };
 
+// This template's controls, added below the shared ones from src/lib/gui.js.
+function addControls(gui) {
+  gui.add(params, 'animate');
+
+  const sampleFromControl = gui
+    .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
+    .name('sample from');
+
+  const fillControl = gui.add(params, 'fillLetters').name('fill');
+
+  const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
+
+  gui.add(params, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
+
+  gui.add(params, 'waveFrequency', 1, 12, 1).name('wave frequency');
+
+  const handlesControl = gui.add(params, 'showHandles').name('curve handles');
+
+  const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
+
+  const outlineShapesControl = gui.add(params, 'showOutlineShapes').name('outline shapes');
+
+  const outlineShapeSizeControl = gui.add(params, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
+
+  const outlineShapeSpacingControl = gui.add(params, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
+
+  const outlineShapeSpeedControl = gui.add(params, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
+
+  const greyOutUnusedControls = (sampleFrom) => {
+    fillControl.enable(sampleFrom !== 'textToPoints');
+    sampleFactorControl.enable(sampleFrom !== 'curves');
+    handlesControl.enable(sampleFrom === 'curves');
+    handleWobbleControl.enable(sampleFrom === 'curves');
+    outlineShapesControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSizeControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpacingControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpeedControl.enable(sampleFrom !== 'textToPoints');
+  };
+  sampleFromControl.onChange(greyOutUnusedControls);
+  greyOutUnusedControls(params.sampleFrom);
+}
+
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ params, onFontChange: changeFont });
+createGUI({ params, onFontChange: changeFont, addControls });
 new p5();

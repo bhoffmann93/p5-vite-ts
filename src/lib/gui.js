@@ -1,12 +1,10 @@
 // THE CONTROL PANEL
 // https://lil-gui.georgealways.com/
 //
-// This is the second file you will work in. Every slider, dropdown and color
-// picker in the corner of the screen is one line down below.
-//
-// Adding a control takes two steps:
-//   1. add the value to `params` in src/sketch.js
-//   2. add one line here
+// The shared part of the panel: text, font, size, colors, export and hotkeys.
+// Your own controls go in addControls() in src/sketch.js:
+//   1. add the value to `params`
+//   2. add one line in addControls()
 //
 // lil-gui picks the kind of control from the value you give it:
 //
@@ -22,9 +20,8 @@ import GUI from 'lil-gui';
 import { fontOptions } from './font/fonts.js';
 import { savePNG } from './export.js';
 
-// `params` is the object in src/sketch.js holding every value the sketch
-// draws with. `onFontChange` runs when someone picks a font from the dropdown.
-export function createGUI({ params, onFontChange }) {
+// `onFontChange` runs when someone picks a font from the dropdown.
+export function createGUI({ params, onFontChange, addControls = () => {} }) {
   const gui = new GUI({ title: 'Controls' });
 
   gui.add(params, 'text');
@@ -38,44 +35,7 @@ export function createGUI({ params, onFontChange }) {
 
   gui.addColor(params, 'backgroundColor', 255).name('background');
 
-  gui.add(params, 'animate');
-
-  const sampleFromControl = gui
-    .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
-    .name('sample from');
-
-  const fillControl = gui.add(params, 'fillLetters').name('fill');
-
-  const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
-
-  gui.add(params, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
-
-  gui.add(params, 'waveFrequency', 1, 12, 1).name('wave frequency');
-
-  const handlesControl = gui.add(params, 'showHandles').name('curve handles');
-
-  const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
-
-  const outlineShapesControl = gui.add(params, 'showOutlineShapes').name('outline shapes');
-
-  const outlineShapeSizeControl = gui.add(params, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
-
-  const outlineShapeSpacingControl = gui.add(params, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
-
-  const outlineShapeSpeedControl = gui.add(params, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
-
-  const greyOutUnusedControls = (sampleFrom) => {
-    fillControl.enable(sampleFrom !== 'textToPoints');
-    sampleFactorControl.enable(sampleFrom !== 'curves');
-    handlesControl.enable(sampleFrom === 'curves');
-    handleWobbleControl.enable(sampleFrom === 'curves');
-    outlineShapesControl.enable(sampleFrom !== 'textToPoints');
-    outlineShapeSizeControl.enable(sampleFrom !== 'textToPoints');
-    outlineShapeSpacingControl.enable(sampleFrom !== 'textToPoints');
-    outlineShapeSpeedControl.enable(sampleFrom !== 'textToPoints');
-  };
-  sampleFromControl.onChange(greyOutUnusedControls);
-  greyOutUnusedControls(params.sampleFrom);
+  addControls(gui);
 
   //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');
