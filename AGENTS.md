@@ -19,7 +19,7 @@ Practical consequences:
 
 ## Rules
 
-**Colours are RGB, never hex.** Write them as `{ r, g, b }` objects with each
+**Colors are RGB, never hex.** Write them as `{ r, g, b }` objects with each
 channel 0–255 — in config, in `params`, in GUI bindings and in `fill()` /
 `background()` calls. No `'#ffffff'`, no `0xffffff`, no shorthand. lil-gui
 takes `addColor(params, 'name', 255)` for exactly this shape, so nothing is
@@ -66,7 +66,7 @@ fonts/              student font files; scanned at build time
 static/             served at / — favicon lives here, not at the root
 LICENSES.md         third-party credits (eases/MIT, p5, lil-gui, Vite)
 src/
-  config.js         screenshotName + starting RGB colours. Student-facing.
+  config.js         screenshotName + starting RGB colors. Student-facing.
   sketch.js         where students start
   lib/
     fonts.js        font discovery + async loading

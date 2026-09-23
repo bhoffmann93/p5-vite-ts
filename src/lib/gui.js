@@ -1,7 +1,7 @@
 // THE CONTROL PANEL
 // https://lil-gui.georgealways.com/
 //
-// This is the second file you will work in. Every slider, dropdown and colour
+// This is the second file you will work in. Every slider, dropdown and color
 // picker in the corner of the screen is one line down below.
 //
 // Adding a control takes two steps:
@@ -14,7 +14,7 @@
 //   gui.add(params, 'showGrid');              true/false -> checkbox
 //   gui.add(params, 'words');                 text      -> text field
 //   gui.add(params, 'easing', easingNames);   a list    -> dropdown
-//   gui.addColor(params, 'accent', 255);                -> colour picker
+//   gui.addColor(params, 'accent', 255);                -> color picker
 //
 // Add .name('Label') when the property name is not what you want to read.
 
@@ -31,12 +31,16 @@ export function createGUI({ params, onFontChange }) {
 
   gui.add(params, 'font', fontOptions).onChange(onFontChange);
 
-  gui.add(params, 'textSize', 8, 400, 1).name('size');
+  gui.add(params, 'textSize', 100, 500, 1).name('size');
 
   //the 255 says our r, g and b channels run to 255, not to 1
-  gui.addColor(params, 'foregroundColor', 255).name('type colour');
+  gui.addColor(params, 'foregroundColor', 255).name('type color');
 
   gui.addColor(params, 'backgroundColor', 255).name('background');
+
+  gui.add(params, 'animate');
+
+  gui.add(params, 'showOutlines').name('outlines');
 
   //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');

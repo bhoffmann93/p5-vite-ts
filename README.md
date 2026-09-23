@@ -73,8 +73,8 @@ the browser updates by itself. To stop it, click the terminal and press
 | **text** | The words on screen. Click the field and type. |
 | **font** | Pick from the fonts in your `fonts/` folder. |
 | **size** | How big the type is. |
-| **type colour** | The colour of the letters. Click the swatch for a picker. |
-| **background** | The colour behind them. |
+| **type color** | The color of the letters. Click the swatch for a picker. |
+| **background** | The color behind them. |
 | **Export PNG** | Saves the canvas as an image. |
 
 | Key | What it does |
@@ -101,7 +101,7 @@ If a font you just added doesn't show up: stop the dev server
 ### Your project settings
 
 Open **`src/config.js`**. It holds the name your images are saved under and
-the colours the sketch opens with:
+the colors the sketch opens with:
 
 ```js
 export const screenshotName = 'my-poster';
@@ -117,9 +117,9 @@ dropdown, which is the filename without `.otf` or `.ttf`.
 Exported images are named after `screenshotName`, plus the date and time:
 `my-poster-260921-1408.png`. Two exports never overwrite each other.
 
-Colours are written as **r, g, b** — red, green and blue, each from 0 to 255.
+Colors are written as **r, g, b** — red, green and blue, each from 0 to 255.
 So `{ r: 255, g: 0, b: 0 }` is red, and `{ r: 255, g: 255, b: 255 }` is white.
-The colour pickers in the panel change them while the sketch runs; these are
+The color pickers in the panel change them while the sketch runs; these are
 just the starting values.
 
 ### Saving stills
@@ -233,7 +233,7 @@ terminal and run `npm run dev` again.
 fonts/              <- your font files go here
 src/
   sketch.js         <- your code
-  config.js         <- screenshot name and starting colours
+  config.js         <- screenshot name and starting colors
   lib/              <- the tool itself: panel, fonts, export, easing
 static/             <- images and other files used as-is
 ```
