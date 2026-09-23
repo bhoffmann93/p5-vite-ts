@@ -20,20 +20,22 @@ import GUI from 'lil-gui';
 import { fontOptions } from './font/fonts.js';
 import { savePNG } from './export.js';
 
-// `onFontChange` runs when someone picks a font from the dropdown.
-export function createGUI({ params, onFontChange, addControls = () => {} }) {
+// `onFontChange` runs when someone picks a font from the dropdown. A shared
+// control only appears when `params` has its value, so a template without
+// text simply leaves `text`, `font` and `textSize` out.
+export function createGUI({ params, onFontChange = () => {}, addControls = () => {} }) {
   const gui = new GUI({ title: 'Controls' });
 
-  gui.add(params, 'text');
+  if ('text' in params) gui.add(params, 'text');
 
-  gui.add(params, 'font', fontOptions).onChange(onFontChange);
+  if ('font' in params) gui.add(params, 'font', fontOptions).onChange(onFontChange);
 
-  gui.add(params, 'textSize', 100, 500, 1).name('size');
+  if ('textSize' in params) gui.add(params, 'textSize', 100, 500, 1).name('size');
 
   //the 255 says our r, g and b channels run to 255, not to 1
-  gui.addColor(params, 'foregroundColor', 255).name('type color');
+  if ('foregroundColor' in params) gui.addColor(params, 'foregroundColor', 255).name('type color');
 
-  gui.addColor(params, 'backgroundColor', 255).name('background');
+  if ('backgroundColor' in params) gui.addColor(params, 'backgroundColor', 255).name('background');
 
   addControls(gui);
 

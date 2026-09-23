@@ -58,6 +58,22 @@ function commandsToContours(commands) {
   return contours;
 }
 
+// Moves the anchor at the end of contour[curveIndex] by `offset` ({ x, y }),
+// and its two handles with it, as in Illustrator, so the outline stays smooth.
+export function moveAnchor(contour, curveIndex, offset) {
+  const curve = contour[curveIndex];
+  const nextCurve = contour[(curveIndex + 1) % contour.length];
+  const handleBefore = curve.controls[curve.controls.length - 1];
+  const handleAfter = nextCurve.controls[0];
+
+  //a straight line has no handle on that side
+  for (const movingPoint of [curve.to, handleBefore, handleAfter]) {
+    if (!movingPoint) continue;
+    movingPoint.x += offset.x;
+    movingPoint.y += offset.y;
+  }
+}
+
 // Draws the letters with the current fill() and stroke(), counters cut out.
 // { showHandles: true } also draws the anchors and handles.
 export function drawCurves(letters, { showHandles = false } = {}) {
