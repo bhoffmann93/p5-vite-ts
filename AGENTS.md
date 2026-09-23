@@ -153,6 +153,7 @@ fixed poster size. Don't add fixed dimensions to the config.
 
 - The **text** control is a single-line lil-gui field. A multi-line textarea
   is wanted but deliberately deferred.
-- `sketch.js` on this branch is a showcase of the font library. It will be
-  stripped back; students get several templates, so keep `src/lib/` free of
-  anything specific to one sketch.
+- Templates live on branches made from `main` (`sampled`, `shader`). Change
+  `src/lib/` on `main`, then `git merge main` into each template. Keep
+  `src/lib/` free of anything specific to one template; a template's controls
+  go in `addControls()` in its `sketch.js`.
