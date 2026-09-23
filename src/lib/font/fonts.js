@@ -9,7 +9,7 @@
 // To pick which font the sketch opens with, set `startingFont` in
 // src/config.js. You should not need to change anything here.
 
-import { startingFont } from '../config.js';
+import { startingFont } from '../../config.js';
 
 const files = import.meta.glob('/fonts/*.{otf,ttf,OTF,TTF}', {
   eager: true,
@@ -39,7 +39,7 @@ export const defaultFont = fontOptions[startingFont] ?? firstFont;
 
 // Switches the sketch to a font. Reading the file takes a moment, which is why
 // this is async and why setup() says `await applyFont(...)`. It hands the font
-// back too, because taking letters apart (src/lib/outlines.js) needs it.
+// back too, because taking letters apart (src/lib/font/curves.js) needs it.
 export async function applyFont(url) {
   const font = await loadFont(url);
   textFont(font);

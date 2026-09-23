@@ -19,7 +19,7 @@
 // Add .name('Label') when the property name is not what you want to read.
 
 import GUI from 'lil-gui';
-import { fontOptions } from './fonts.js';
+import { fontOptions } from './font/fonts.js';
 import { savePNG } from './export.js';
 
 // `params` is the object in src/sketch.js holding every value the sketch
@@ -40,7 +40,9 @@ export function createGUI({ params, onFontChange }) {
 
   gui.add(params, 'animate');
 
-  gui.add(params, 'showOutlines').name('outlines');
+  gui.add(params, 'showCurves').name('curves');
+
+  gui.add(params, 'showHandles').name('handles');
 
   //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');

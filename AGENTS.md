@@ -69,10 +69,12 @@ src/
   config.js         screenshotName + starting RGB colors. Student-facing.
   sketch.js         where students start
   lib/
-    fonts.js        font discovery + async loading
     gui.js          lil-gui panel and hotkeys
     export.js       timestamp() + savePNG()
     easings.js      31 easing curves from `eases`, v = ease(t)
+    font/
+      fonts.js      font discovery + async loading
+      curves.js     text -> contours -> Bézier curves, drawing + handles
 ```
 
 Students edit `src/sketch.js` and `src/config.js`. When adding a feature,
@@ -84,7 +86,7 @@ prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 **The build step stays.** Students run `npm install` and `npm run dev`. Do not
 propose replacing this with CDN script tags, VS Code's Live Server, or the p5
 web editor: the point is that they work in a modern environment they will meet
-again. It is also load-bearing — `import.meta.glob` in `src/lib/fonts.js` is
+again. It is also load-bearing — `import.meta.glob` in `src/lib/font/fonts.js` is
 what makes a font appear in the dropdown when it is dropped into `fonts/`, and
 that is a Vite feature. Removing the bundler means hand-maintaining a list of
 filenames.

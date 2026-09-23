@@ -13,9 +13,9 @@
 
 import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
-import { applyFont, defaultFont } from './lib/fonts.js';
+import { applyFont, defaultFont } from './lib/font/fonts.js';
 import { Easings } from './lib/easings.js';
-import { getContours, drawContours } from './lib/outlines.js';
+import { getContours, drawContours } from './lib/font/curves.js';
 import { startingText, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
@@ -30,7 +30,8 @@ const params = {
   foregroundColor,
   backgroundColor,
   animate: false,
-  showOutlines: true,
+  showCurves: true,
+  showHandles: true,
 };
 
 // The font currently in use. Taking letters apart needs the font itself, not
@@ -76,8 +77,8 @@ window.draw = function draw() {
   //with animation off the letter holds still at the size from the panel
   textSize(params.animate ? sizeText : params.textSize);
 
-  if (params.showOutlines && currentFont) {
-    drawOutlines();
+  if (params.showCurves && currentFont) {
+    drawLetterCurves();
   } else {
     text(params.text, width / 2, height / 2);
   }
@@ -85,13 +86,13 @@ window.draw = function draw() {
 
 // A way to see the curves the letters are built from: only the line around
 // every edge, in the type color, with nothing filled in.
-function drawOutlines() {
+function drawLetterCurves() {
   const contours = getContours(currentFont, params.text, width / 2, height / 2);
 
   noFill();
   stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
   strokeWeight(1);
-  drawContours(contours);
+  drawContours(contours, { showHandles: params.showHandles });
 }
 
 window.windowResized = function windowResized() {
