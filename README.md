@@ -105,9 +105,14 @@ the colours the sketch opens with:
 
 ```js
 export const screenshotName = 'my-poster';
+export const startingFont = 'Inter-Black';
 export const backgroundColor = { r: 0, g: 0, b: 0 };
 export const foregroundColor = { r: 255, g: 255, b: 255 };
 ```
+
+`startingFont` is the font the sketch opens with, so you are not picking it
+from the dropdown every time you reload. Write it exactly as it appears in the
+dropdown, which is the filename without `.otf` or `.ttf`.
 
 Exported images are named after `screenshotName`, plus the date and time:
 `my-poster-260921-1408.png`. Two exports never overwrite each other.

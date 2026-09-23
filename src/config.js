@@ -8,5 +8,11 @@
 // The name your exported images get — no spaces, no slashes.
 //   'generative-typography'  ->  generative-typography-260921-1408.png
 export const screenshotName = 'generative-typography';
+
+// The font the sketch opens with, written the way it appears in the dropdown,
+// which is the filename without the extension. Leave it as '' to use whichever
+// font comes first alphabetically.
+export const startingFont = 'Inter-Black';
+
 export const backgroundColor = { r: 20, g: 20, b: 20 };
 export const foregroundColor = { r: 250, g: 250, b: 250 };
