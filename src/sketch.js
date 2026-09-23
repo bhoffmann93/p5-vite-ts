@@ -21,6 +21,7 @@ import {
   defaultFont,
   textToCurves,
   drawCurves,
+  moveAnchor,
   textToLetterContours,
   getCenter,
   placeAlongOutline,
@@ -136,30 +137,18 @@ function drawFromCurves(timeInSeconds) {
 
     for (const contour of letter) {
       contour.forEach((curve, curveIndex) => {
-        const nextCurve = contour[(curveIndex + 1) % contour.length];
         const move = waveOutwards(curve.to, center, timeInSeconds);
-
-        const handleBefore = curve.controls[curve.controls.length - 1];
-        const handleAfter = nextCurve.controls[0];
-        for (const movingPoint of [curve.to, handleBefore, handleAfter]) {
-          if (!movingPoint) continue;
-          movingPoint.x += move.x;
-          movingPoint.y += move.y;
-        }
+        moveAnchor(contour, curveIndex, move);
       });
     }
   }
 
-  //then the handles on their own
-  for (const letter of letters) {
-    for (const contour of letter) {
-      for (const curve of contour) {
-        for (const handle of curve.controls) {
-          const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
-          handle.x += drift.x;
-          handle.y += drift.y;
-        }
-      }
+  //then the handles on their own, every curve of every letter
+  for (const curve of letters.flat(2)) {
+    for (const handle of curve.controls) {
+      const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
+      handle.x += drift.x;
+      handle.y += drift.y;
     }
   }
 
