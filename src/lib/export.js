@@ -23,7 +23,7 @@ export const timestamp = () => {
 };
 
 // Saves whatever is on the canvas right now into your Downloads folder.
-// saveCanvas() is p5's own function. 'jpg' and 'webp' work here too.
+// 'jpg' and 'webp' work here too.
 export function savePNG() {
   saveCanvas(`${screenshotName}-${timestamp()}`, 'png');
 }

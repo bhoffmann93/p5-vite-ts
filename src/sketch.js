@@ -9,7 +9,7 @@
 //   draw()   runs about 60 times a second, forever. Animation lives here.
 //
 // The font tools (curves, points by letter, shapes along an outline) live in
-// src/lib/font/. Each file there starts with how to use it.
+// src/lib/font/.
 //
 // Note: this is p5 version 2. If you find a tutorial that uses `preload()`,
 // it is written for p5 version 1 and will not work here. See the README.
@@ -55,10 +55,9 @@ const params = {
 
 // Values the panel does not change. Tweak them here.
 
-// The animation: the letters grow and shrink over this many seconds.
 const LOOP_SECONDS = 2;
 
-// How fast the wave travels round the letter, in radians per second.
+// radians per second
 const WAVE_SPEED = 2;
 
 // How far apart two handles must be before they drift differently. Smaller
@@ -69,17 +68,12 @@ const NOISE_SCALE = 0.01;
 // always move along the diagonal.
 const NOISE_OFFSET_FOR_Y = 100;
 
-// How big the points are drawn, in pixels, and their colors.
 const POINT_SIZE = 6;
 const redPointColor = { r: 255, g: 60, b: 60 };
 const bluePointColor = { r: 60, g: 120, b: 255 };
 
-// Curves have no points of their own, so for them the outline shapes sample
-// the outline this finely. The p5 options share the points you see instead.
 const OUTLINE_SHAPE_SAMPLE_FACTOR = 0.3;
 
-// The font currently in use. Taking letters apart needs the font itself, not
-// just its name, so we keep hold of it here.
 let currentFont = null;
 
 async function changeFont(url) {
@@ -98,27 +92,20 @@ window.draw = function draw() {
   background(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b);
   const timeInSeconds = millis() / 1000;
 
-  //everything is drawn around the middle of the canvas: translate() moves
-  //the point 0, 0 there, so the letters sit at 0, 0 from here on
   translate(width / 2, height / 2);
   textSize(params.textSize);
 
-  //an easing in use: the letters grow and shrink. scale() zooms the whole
-  //drawing around 0, 0, which is the middle of the canvas.
   if (params.animate) {
     //counts 0 to 1 over LOOP_SECONDS, then starts again at 0
     const timeLoop01 = (timeInSeconds / LOOP_SECONDS) % 1;
     const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
 
-    //the easing decides how the size travels between half and full size.
-    //Try swapping backInOut for bounceOut or elasticOut.
+    //try bounceOut or elasticOut instead of backInOut
     const timeEased = Easings.backInOut(timePingPong);
     scale(lerp(0.5, 1, timeEased));
   }
 
-  //the letters are rebuilt from the font's outlines, so they can be moved
-  //before drawing. text() is only the fallback for the moment before the font
-  //has loaded.
+  //text() only until the font has loaded
   if (!currentFont) {
     fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
     text(params.text, 0, 0);
@@ -129,8 +116,6 @@ window.draw = function draw() {
   if (params.sampleFrom === 'textToContours') drawFromContours(timeInSeconds);
   if (params.sampleFrom === 'textToPoints') drawFromPoints(timeInSeconds);
 
-  //textToPoints does not know where one outline ends, so no shapes can
-  //travel along one
   if (params.showOutlineShapes && params.sampleFrom !== 'textToPoints') {
     drawOutlineShapes(timeInSeconds);
   }
@@ -138,27 +123,14 @@ window.draw = function draw() {
 
 // THREE WAYS TO SAMPLE A LETTER
 //
-// "sample from" in the panel picks where the shape of the letters comes from.
-//
-//   curves          the font's own Bézier curves: anchors and handles. Smooth
-//                   at any size. The only one with handles to move.
-//   textToContours  p5 places points along each outline, sorted by outline.
-//                   Straight lines join them, so few points (a low sample
-//                   factor) look faceted. Can be filled, because p5 says
-//                   which points form the outside and which the counter.
-//   textToPoints    the same points in one pile. p5 does not say which
-//                   outline a point is on, so it cannot be filled: it would
-//                   join the outside to the counter. Always drawn as points.
-//
-// Every one of them gets the same wave: each anchor or point is pushed out
-// from the middle of its letter and pulled back in.
+//   curves          the font's Bézier curves, with anchors and handles
+//   textToContours  points along each outline, grouped by outline, so fillable
+//   textToPoints    the same points in one list, so only drawable as points
 
 function drawFromCurves(timeInSeconds) {
   const letters = textToCurves(currentFont, params.text, 0, 0);
 
-  //anchors first. Like in Illustrator, an anchor's handles travel with it,
-  //so the curve stays smooth. Each anchor is the end (`to`) of one curve and
-  //the start of the next, so moving every curve's end moves every anchor once.
+  //anchors first; their handles move with them, as in Illustrator
   for (const letter of letters) {
     //measured before anything moves, so the middle stays put
     const center = getCenter(letter.flat().map((curve) => curve.from));
@@ -179,7 +151,7 @@ function drawFromCurves(timeInSeconds) {
     }
   }
 
-  //then the handles on their own, drifting with noise()
+  //then the handles on their own
   for (const letter of letters) {
     for (const contour of letter) {
       for (const curve of contour) {
@@ -202,8 +174,7 @@ function drawFromContours(timeInSeconds) {
   });
   waveLetters(letters, timeInSeconds);
 
-  //fill on: every outline goes into one shape as a contour, which is what
-  //cuts the counters out, the same way drawCurves() does it
+  //one shape with a contour per outline cuts out the counters
   if (params.fillLetters) {
     setLetterStyle();
     beginShape();
@@ -218,11 +189,7 @@ function drawFromContours(timeInSeconds) {
     return;
   }
 
-  //fill off: the points themselves. The outlines take turns being red and
-  //blue, to show how p5 sorted them. On an "A" the outside is red and the
-  //counter is blue. The blue is our choice, not p5's.
-  //
-  //The loops say `textPoint`, not `point`, because point() is a p5 function.
+  //outlines alternate red and blue to show how p5 grouped them
   noStroke();
   letters.flat().forEach((outline, outlineIndex) => {
     const pointColor = outlineIndex % 2 === 0 ? redPointColor : bluePointColor;
@@ -238,8 +205,7 @@ function drawFromPoints(timeInSeconds) {
     sampleFactor: params.sampleFactor,
   });
 
-  //one pile means we cannot tell the letters apart either, so the wave
-  //pushes out from the middle of the whole text instead of each letter
+  //one list has no letters, so the wave starts from the middle of the text
   const center = getCenter(textPoints);
   for (const textPoint of textPoints) {
     const move = waveOutwards(textPoint, center, timeInSeconds);
@@ -254,8 +220,7 @@ function drawFromPoints(timeInSeconds) {
   }
 }
 
-// Fill on: the letters are filled in with the type color, counters cut out.
-// Fill off: only the line around every edge, to study how they are built.
+// Filled letters, or just their outline, in the type color.
 function setLetterStyle() {
   if (params.fillLetters) {
     fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
@@ -269,21 +234,15 @@ function setLetterStyle() {
 
 // THE WAVE
 //
-// How far to move a point this frame. It moves along the arrow from `center`
-// out to the point, further out and back in. sin() makes that a wave, which
-// travels round the letter over time.
-//
-//   waveAmplitude  how far a point is pushed out or pulled in, in pixels
-//   waveFrequency  how many waves fit on one full turn around the letter.
-//                  Whole numbers only, so the last wave meets the first.
+// Pushes a point out from `center` and back in, as a sine wave travelling
+// round the letter. waveFrequency is waves per turn, so whole numbers only.
 function waveOutwards(position, center, timeInSeconds) {
   const outwards = p5.Vector.sub(createVector(position.x, position.y), center);
   const wave = sin(outwards.heading() * params.waveFrequency + timeInSeconds * WAVE_SPEED);
   return outwards.setMag(wave * params.waveAmplitude);
 }
 
-// Moves every point of every letter by the wave, each from the middle of its
-// own letter.
+// The wave on every point, each from the middle of its own letter.
 function waveLetters(letters, timeInSeconds) {
   for (const letter of letters) {
     //measured before anything moves, so the middle stays put
@@ -298,8 +257,6 @@ function waveLetters(letters, timeInSeconds) {
   }
 }
 
-// How far a handle drifts this frame: a smooth noise() value for x and for y,
-// each mapped to between -amount and +amount pixels.
 function noiseDrift(position, amount, timeInSeconds) {
   const noiseX = position.x * NOISE_SCALE;
   const noiseY = position.y * NOISE_SCALE;
@@ -311,22 +268,13 @@ function noiseDrift(position, amount, timeInSeconds) {
   };
 }
 
-// OUTLINE SHAPES
-//
-// Circles that travel along every outline, outlineShapeSpacing pixels apart,
-// at outlineShapeSpeed pixels per second. They ride on the same waving
-// outline you see. Counters run the other way round from the outside, so
-// their circles do too. placeAlongOutline() in src/lib/font/outlines.js
-// does the measuring.
 function drawOutlineShapes(timeInSeconds) {
   const sampleFactor = params.sampleFrom === 'curves' ? OUTLINE_SHAPE_SAMPLE_FACTOR : params.sampleFactor;
   const letters = textToLetterContours(currentFont, params.text, 0, 0, { sampleFactor });
   waveLetters(letters, timeInSeconds);
 
-  //how far the circles have travelled round since the sketch started
   const offset = timeInSeconds * params.outlineShapeSpeed;
 
-  //an outline in the type color, nothing filled in
   noFill();
   stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
   strokeWeight(1);

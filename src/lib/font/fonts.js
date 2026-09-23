@@ -38,8 +38,7 @@ if (startingFont && !fontOptions[startingFont]) {
 export const defaultFont = fontOptions[startingFont] ?? firstFont;
 
 // Switches the sketch to a font. Reading the file takes a moment, which is why
-// this is async and why setup() says `await applyFont(...)`. It hands the font
-// back too, because taking letters apart (src/lib/font/curves.js) needs it.
+// this is async and why setup() says `await applyFont(...)`.
 export async function applyFont(url) {
   const font = await loadFont(url);
   textFont(font);

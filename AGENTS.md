@@ -72,6 +72,7 @@ src/
     gui.js          lil-gui panel and hotkeys
     export.js       timestamp() + savePNG()
     easings.js      31 easing curves from `eases`, v = ease(t)
+    math.js         damp, parabola, cubicPulse, cubicPulseWrap (what p5 lacks)
     font/
       index.js      re-exports everything below; sketches import from here
       fonts.js      font discovery + async loading
@@ -85,12 +86,6 @@ prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 `src/lib/`.
 
 ## The font library
-
-`src/lib/font/` is a small library students use (often through an AI
-assistant) to take letters apart. When a student asks for something it
-covers, use it instead of writing new geometry code, and import from
-`./lib/font/index.js`. Each file's header comment is its documentation;
-keep it current when a function changes.
 
 | Task | Use |
 | --- | --- |
@@ -106,14 +101,6 @@ contour holds **curves** `{ from, controls, to }`: `from`/`to` are
 **anchors**, `controls` are **handles**, as in Illustrator. With points, a
 contour is a list of `{ x, y }`. Do not call curves "segments" and do not
 rename p5 options (it is `sampleFactor`, not "density").
-
-All positions are plain `{ x, y }` objects, so students deform letters by
-changing them between getting and drawing. A curve's `to` is the same
-object as the next curve's `from`, so moving it moves both.
-
-`sketch.js` draws everything around `translate(width / 2, height / 2)`,
-with the letters at `0, 0`. The animate option uses `scale()` there, not
-`textSize()`.
 
 ## Things that will bite you
 
@@ -166,6 +153,6 @@ fixed poster size. Don't add fixed dimensions to the config.
 
 - The **text** control is a single-line lil-gui field. A multi-line textarea
   is wanted but deliberately deferred.
-- `sketch.js` on this branch is a showcase of the font library (three
-  sampling modes, a wave, outline shapes). The plan is to strip it back to a
-  minimal sketch for students and keep `src/lib/font/` as the library.
+- `sketch.js` on this branch is a showcase of the font library. It will be
+  stripped back; students get several templates, so keep `src/lib/` free of
+  anything specific to one sketch.

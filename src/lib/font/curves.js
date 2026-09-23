@@ -1,32 +1,12 @@
-// Splits text into its outlines, using the font's own curves.
-//
-//   letter    one character, as a list of its contours. A space has none,
-//             so spaces are left out.
-//   contour   one closed outline. An "o" has two: the outside and the hole.
-//   curve     one piece of a contour: a straight line, or a bend with one or
-//             two control points. Shaped { from, controls: [...], to }.
-//
-// In Illustrator's words, `from` and `to` are anchor points and `controls`
-// are the handles.
-//
-// Every point is a plain { x, y } you can change before drawing. A curve's
-// `to` is the very same point as the next curve's `from`, so moving one end
-// moves both, and the outline stays closed.
-//
-// textToCurves() hands back an array of letters, each an array of contours,
-// each an array of curves. It is named after p5's textToPoints() and textToContours(), which give you
-// points along the outline instead of the curves themselves.
-//
-// This is p5 version 2, which reads fonts with Typr.js. Code online that reads
-// `font.font` and `glyph.getPath()` is for p5 version 1 and opentype.js, and
-// will not work here.
+// The font's own Bézier curves, as letters > contours > curves.
+// A curve is { from, controls, to }: `from` and `to` are the anchors,
+// `controls` the handles. Change any { x, y } before drawing. A curve's `to`
+// is the same point as the next curve's `from`, so the outline stays closed.
 
 import { groupByLetter } from './letters.js';
 
-// How big the squares and circles of the handles are drawn, in pixels.
 const HANDLE_DOT_SIZE = 6;
 
-// The colors of the anchors and handles, so they stand out from the letter.
 const anchorColor = { r: 255, g: 160, b: 0 };
 const handleColor = { r: 0, g: 200, b: 255 };
 
@@ -37,7 +17,6 @@ export function textToCurves(font, str, x, y) {
   return groupByLetter(font, str, contours);
 }
 
-// Turns p5's list of pen moves into contours of curves.
 function commandsToContours(commands) {
   const contours = [];
   let contour = [];
@@ -52,9 +31,7 @@ function commandsToContours(commands) {
       start = { x: numbers[0], y: numbers[1] };
       pen = start;
     } else if (type === 'Z') {
-      //closing draws the last stretch back to the start, if there is one.
-      //If the pen is already there, the last curve ends on the start point
-      //itself, so moving it moves both ends of the outline together.
+      //close with a line back to the start, or join the last curve onto it
       const lastCurve = contour[contour.length - 1];
       if (dist(pen.x, pen.y, start.x, start.y) > 0) {
         contour.push({ from: pen, controls: [], to: start });
@@ -81,13 +58,8 @@ function commandsToContours(commands) {
   return contours;
 }
 
-// Draws the letters from textToCurves() with the current fill() and stroke().
-// Every outline goes into one shape as a contour, which is what cuts the
-// holes out of letters like "o" and "A" when there is a fill.
-//
-// Pass { showHandles: true } to also draw the Bézier handles: a square on
-// every anchor, a circle on every handle, and a line joining each handle to
-// its anchor. Their colors are set at the top of this file.
+// Draws the letters with the current fill() and stroke(), counters cut out.
+// { showHandles: true } also draws the anchors and handles.
 export function drawCurves(letters, { showHandles = false } = {}) {
   const contours = letters.flat();
 
@@ -113,7 +85,6 @@ export function drawCurves(letters, { showHandles = false } = {}) {
   }
 }
 
-// Draws one piece of an outline as an open line with the current stroke().
 export function drawCurve(curve, { showHandles = false } = {}) {
   beginShape();
   vertex(curve.from.x, curve.from.y);
@@ -123,10 +94,6 @@ export function drawCurve(curve, { showHandles = false } = {}) {
   if (showHandles) drawHandles(curve);
 }
 
-// The anchor and handles of one curve, in anchorColor and handleColor, with
-// the current strokeWeight(). The start of the curve
-// is pulled towards the first control point and the end towards the last,
-// which is why the lines go from each end to its nearest control point.
 export function drawHandles(curve) {
   push();
   noFill();
@@ -149,9 +116,6 @@ export function drawHandles(curve) {
   pop();
 }
 
-// Continues a shape that is already open. In p5 version 2 a bend is a run of
-// bezierVertex() calls, and bezierOrder() says how many make up one bend:
-// 2 for a quadratic curve, 3 for a cubic one.
 function addCurveVertices(curve) {
   if (curve.controls.length === 0) {
     vertex(curve.to.x, curve.to.y);
