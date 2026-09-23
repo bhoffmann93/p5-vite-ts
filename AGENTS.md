@@ -150,6 +150,11 @@ redistribute.
 `windowResized`. Students are building an interactive tool, not exporting to a
 fixed poster size. Don't add fixed dimensions to the config.
 
+On the `grid` branch the canvas still follows the window, but the grid itself
+is a fixed square (`gridSize` in `config.js`) centered in it, so cells keep
+their proportions. Modules are stored by name in `grid[row][column]`; a new
+module goes into `MODULES` and `drawModule()`.
+
 ## Known follow-ups
 
 - The **text** control is a single-line lil-gui field. A multi-line textarea

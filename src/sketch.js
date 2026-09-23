@@ -30,6 +30,8 @@ const params = {
   backgroundColor,
 };
 
+const gridLineColor = { r: 128, g: 128, b: 128 };
+
 // A click moves a cell one step along this list.
 const MODULES = ['empty', 'square', 'circle'];
 
@@ -58,7 +60,7 @@ window.draw = function draw() {
 
       if (params.showGrid) {
         noFill();
-        stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b, 60);
+        stroke(gridLineColor.r, gridLineColor.g, gridLineColor.b);
         strokeWeight(1);
         rect(x, y, cellWidth, cellHeight);
       }
@@ -90,10 +92,14 @@ function gridTop() {
 
 window.mousePressed = function mousePressed(event) {
   //the control panel sits on top of the canvas, so clicks on it are ignored
-  if (event.target !== drawingContext.canvas) return;
+  if (event.target.tagName !== 'CANVAS') return;
 
-  const column = floor(((mouseX - gridLeft()) / gridSize) * params.columns);
-  const row = floor(((mouseY - gridTop()) / gridSize) * params.rows);
+  const cellWidth = gridSize / params.columns;
+  const cellHeight = gridSize / params.rows;
+
+  //which cell the mouse is over, counted from the grid's top left corner
+  const column = floor((mouseX - gridLeft()) / cellWidth);
+  const row = floor((mouseY - gridTop()) / cellHeight);
 
   //clicks around the grid do nothing
   if (column < 0 || column >= params.columns || row < 0 || row >= params.rows) return;
@@ -108,7 +114,8 @@ function resizeGrid() {
   for (let row = 0; row < params.rows; row++) {
     resized[row] = [];
     for (let column = 0; column < params.columns; column++) {
-      resized[row][column] = grid[row]?.[column] ?? 'empty';
+      const cellExisted = row < grid.length && column < grid[row].length;
+      resized[row][column] = cellExisted ? grid[row][column] : 'empty';
     }
   }
   grid = resized;
@@ -128,6 +135,7 @@ function addControls(gui) {
   gui.add(params, 'columns', 1, 32, 1).onChange(resizeGrid);
   gui.add(params, 'rows', 1, 32, 1).onChange(resizeGrid);
   gui.add(params, 'showGrid').name('show grid');
+  //a function on an object is how lil-gui makes a button
   gui.add({ clearGrid }, 'clearGrid').name('clear');
 }
 
