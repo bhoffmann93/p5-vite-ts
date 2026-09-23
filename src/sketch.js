@@ -15,7 +15,7 @@ import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { findPointAt } from './lib/drag.js';
 import { applyFont, defaultFont, fontOptions, textToCurves } from './lib/font/index.js';
-import { startingText, backgroundColor, foregroundColor } from './config.js';
+import { startingText, showLetterCode, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. The text and font are for the last
 // step, the letter.
@@ -33,7 +33,6 @@ const STEPS = [
   { title: 'Connect the lerps', pointCount: 3, lerpRounds: 2 },
   { title: 'Quadratic Bézier', pointCount: 3, lerpRounds: 2, showCurve: true },
   { title: 'Cubic Bézier', pointCount: 4, lerpRounds: 3, showCurve: true },
-  { title: "p5's bezier()", pointCount: 4, lerpRounds: 3, showBezier: true },
   { title: 'A letter is made of Béziers', showLetter: true },
 ];
 
@@ -42,22 +41,19 @@ const POINT_NAMES = ['A', 'B', 'C', 'D'];
 // the title, arrows, labels and play button, whatever font the letter uses
 const UI_FONT = 'Inter-Medium';
 
-const anchorColor = { r: 255, g: 160, b: 0 };
-const controlPointColor = { r: 0, g: 200, b: 255 };
+const anchorColor = { r: 204, g: 143, b: 41 };
+const controlPointColor = { r: 41, g: 169, b: 204 };
 const lineColor = { r: 110, g: 110, b: 110 };
 
 // one color per round of lerps: AB, then ABC, then ABCD
 const roundColors = [
-  { r: 120, g: 220, b: 120 },
-  { r: 255, g: 90, b: 160 },
-  { r: 255, g: 220, b: 60 },
+  { r: 112, g: 176, b: 112 },
+  { r: 204, g: 98, b: 143 },
+  { r: 204, g: 182, b: 79 },
 ];
 
 const POINT_SIZE = 14;
 const LETTER_POINT_SIZE = 7;
-
-// the letter step's point colors keep this much of their saturation and brightness
-const LETTER_COLOR_STRENGTH = 0.8;
 const GRAB_RADIUS = 20;
 const TITLE_Y = 60;
 const TITLE_SIZE = 40;
@@ -87,7 +83,7 @@ const PLAY_SECONDS = 4;
 
 let controlPoints = [];
 let stepIndex = 0;
-let t = 0.5;
+let t = 0;
 let playing = false;
 let draggedPoint = null;
 let draggingSlider = false;
@@ -147,14 +143,6 @@ function drawLerpStep(step) {
 
   if (step.showCurve) {
     drawCurveUpTo(points, t, roundColors[step.lerpRounds - 1]);
-  }
-
-  if (step.showBezier) {
-    const [A, B, C, D] = points;
-    noFill();
-    stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
-    strokeWeight(3);
-    bezier(A.x, A.y, B.x, B.y, C.x, C.y, D.x, D.y);
   }
 
   points.forEach((position, index) => {
@@ -244,10 +232,6 @@ function drawLetterStep() {
   textSize(params.textSize);
   const letters = textToCurves(currentFont, params.text, 0, 0);
 
-  const letterAnchorColor = dimColor(anchorColor, LETTER_COLOR_STRENGTH);
-  const letterControlPointColor = dimColor(controlPointColor, LETTER_COLOR_STRENGTH);
-  const letterRoundColors = roundColors.map((roundColor) => dimColor(roundColor, LETTER_COLOR_STRENGTH));
-
   const curvesAsPoints = letters
     .flat(2)
     .map((curve) => [curve.from, ...curve.controls, curve.to].map((position) => createVector(position.x, position.y)));
@@ -258,18 +242,18 @@ function drawLetterStep() {
     const rounds = lerpRounds(points, t, points.length - 1);
 
     for (let roundIndex = 0; roundIndex < rounds.length - 1; roundIndex++) {
-      const lineStroke = roundIndex === 0 ? lineColor : letterRoundColors[roundIndex - 1];
+      const lineStroke = roundIndex === 0 ? lineColor : roundColors[roundIndex - 1];
       drawLines(rounds[roundIndex], lineStroke, 1);
     }
 
     points.forEach((position, index) => {
       const isAnchor = index === 0 || index === points.length - 1;
-      drawDot(position, isAnchor ? letterAnchorColor : letterControlPointColor, '', LETTER_POINT_SIZE);
+      drawDot(position, isAnchor ? anchorColor : controlPointColor, '', LETTER_POINT_SIZE);
     });
 
     for (let roundIndex = 1; roundIndex < rounds.length; roundIndex++) {
       for (const position of rounds[roundIndex]) {
-        drawDot(position, letterRoundColors[roundIndex - 1], '', LETTER_POINT_SIZE);
+        drawDot(position, roundColors[roundIndex - 1], '', LETTER_POINT_SIZE);
       }
     }
   }
@@ -280,31 +264,20 @@ function drawLetterStep() {
   }
 }
 
-// The same color with its saturation and brightness scaled by `strength`.
-function dimColor(rgbColor, strength) {
-  push();
-  colorMode(RGB, 255);
-  const original = color(rgbColor.r, rgbColor.g, rgbColor.b);
-  colorMode(HSB, 360, 100, 100);
-  const dimmed = color(hue(original), saturation(original) * strength, brightness(original) * strength);
-  colorMode(RGB, 255);
-  const result = { r: red(dimmed), g: green(dimmed), b: blue(dimmed) };
-  pop();
-  return result;
-}
-
 function codeLines(step) {
   const lines = [{ code: `let t = ${nf(t, 1, 2)};`, color: params.foregroundColor, comment: ` // ${round(t * 100)}%` }];
 
-  //the letter step shows no code, only which kind of curves the font uses
+  //the letter step shows its code only when src/config.js says so
   if (step.showLetter) {
-    return [{ code: curveCountLine(), color: lineColor }];
-  }
-
-  if (step.showBezier) {
-    lines.push({ code: 'bezier(A.x, A.y, B.x, B.y,', color: params.foregroundColor });
-    lines.push({ code: '       C.x, C.y, D.x, D.y);', color: params.foregroundColor });
-    lines.push({ code: '// the same curve: p5 does the lerps for you', color: lineColor });
+    if (!showLetterCode) return [];
+    lines.push({ code: `let letters = textToCurves(font, '${params.text}', 0, 0);`, color: params.foregroundColor });
+    lines.push({ code: 'for (let curve of letters.flat(2)) {', color: params.foregroundColor });
+    lines.push({ code: '  let points = [curve.from, ...curve.controls, curve.to];', color: params.foregroundColor });
+    lines.push({ code: '  let onCurve = pointOnCurve(points, t);', color: roundColors[2] });
+    lines.push({ code: '}', color: params.foregroundColor });
+    lines.push({ code: '// pointOnCurve() does the lerps from the Cubic Bézier step', color: lineColor });
+    lines.push({ code: '', color: lineColor });
+    lines.push({ code: `// ${curveCountLine()}`, color: lineColor });
     return lines;
   }
 
@@ -393,13 +366,13 @@ function isOverNext(x, y) {
   return abs(y - NAVIGATION_Y) < GRAB_RADIUS && x > width / 2 + ARROW_INNER && x < width / 2 + ARROW_OUTER;
 }
 
-//a finished curve (t = 1) starts again at 0 in the next step, so it draws
-//from the beginning; any other t stays, to compare the steps at the same t
+//every step starts at t = 0 and paused
 function changeStep(direction) {
   const nextIndex = constrain(stepIndex + direction, 0, STEPS.length - 1);
   if (nextIndex === stepIndex) return;
   stepIndex = nextIndex;
-  if (t === 1) t = 0;
+  t = 0;
+  playing = false;
 }
 
 //half the slider's length: 225 pixels, or less on a narrow window

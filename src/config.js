@@ -17,5 +17,9 @@ export const startingFont = 'Vollkorn-Black';
 // The text the sketch opens with. You can change it in the panel while it runs.
 export const startingText = 'O';
 
+// Whether the last step, the letter, shows its code and how many of the
+// font's curves are cubic, quadratic or straight.
+export const showLetterCode = false;
+
 export const backgroundColor = { r: 20, g: 20, b: 20 };
 export const foregroundColor = { r: 250, g: 250, b: 250 };
