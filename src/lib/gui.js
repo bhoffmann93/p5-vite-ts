@@ -42,7 +42,16 @@ export function createGUI({ params, onFontChange }) {
 
   gui.add(params, 'showCurves').name('curves');
 
-  gui.add(params, 'showHandles').name('handles');
+  gui.add(params, 'showHandles').name('curve handles');
+
+  gui.add(params, 'anchorWobble', 0, 100, 1).name('anchor wobble');
+
+  gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
+
+  gui.add(params, 'points', ['none', 'textToPoints', 'textToContours']);
+
+  //how many points per pixel of outline, the option p5 calls sampleFactor
+  gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
 
   //a function on an object is how lil-gui makes a button
   gui.add({ exportPNG: () => savePNG() }, 'exportPNG').name('Export PNG');

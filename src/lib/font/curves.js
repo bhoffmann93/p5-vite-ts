@@ -4,19 +4,31 @@
 //   curve     one piece of a contour: a straight line, or a bend with one or
 //             two control points. Shaped { from, controls: [...], to }.
 //
+// In Illustrator's words, `from` and `to` are anchor points and `controls`
+// are the handles.
+//
 // Every point is a plain { x, y } you can change before drawing. A curve's
 // `to` is the very same point as the next curve's `from`, so moving one end
 // moves both, and the outline stays closed.
 //
-// This is p5 version 2. Code online that reads `font.font` and
-// `glyph.getPath()` is for p5 version 1 and will not work here.
+// textToCurves() hands back an array of contours, each an array of curves.
+// It is named after p5's textToPoints() and textToContours(), which give you
+// points along the outline instead of the curves themselves.
+//
+// This is p5 version 2, which reads fonts with Typr.js. Code online that reads
+// `font.font` and `glyph.getPath()` is for p5 version 1 and opentype.js, and
+// will not work here.
 
 // How big the squares and circles of the handles are drawn, in pixels.
 const HANDLE_DOT_SIZE = 6;
 
+// The colors of the anchors and handles, so they stand out from the letter.
+const anchorColor = { r: 255, g: 160, b: 0 };
+const handleColor = { r: 0, g: 200, b: 255 };
+
 // Reads the outlines of `str` as it would be drawn by text(str, x, y), using
 // whatever textSize() and textAlign() are set right now.
-export function getContours(font, str, x, y) {
+export function textToCurves(font, str, x, y) {
   const commands = font.textToPaths(str, x, y);
 
   const contours = [];
@@ -66,9 +78,9 @@ export function getContours(font, str, x, y) {
 // letters like "o" and "A" when there is a fill.
 //
 // Pass { showHandles: true } to also draw the Bézier handles: a square on
-// every point the outline passes through, a circle on every control point,
-// and a line joining each control point to its end of the curve.
-export function drawContours(contours, { showHandles = false } = {}) {
+// every anchor, a circle on every handle, and a line joining each handle to
+// its anchor. Their colors are set at the top of this file.
+export function drawCurves(contours, { showHandles = false } = {}) {
   beginShape();
   for (const contour of contours) {
     if (contour.length === 0) continue;
@@ -101,7 +113,8 @@ export function drawCurve(curve, { showHandles = false } = {}) {
   if (showHandles) drawHandles(curve);
 }
 
-// The handles of one curve, in the current stroke(). The start of the curve
+// The anchor and handles of one curve, in anchorColor and handleColor, with
+// the current strokeWeight(). The start of the curve
 // is pulled towards the first control point and the end towards the last,
 // which is why the lines go from each end to its nearest control point.
 export function drawHandles(curve) {
@@ -109,9 +122,11 @@ export function drawHandles(curve) {
   noFill();
   rectMode(CENTER);
 
+  stroke(anchorColor.r, anchorColor.g, anchorColor.b);
   square(curve.from.x, curve.from.y, HANDLE_DOT_SIZE);
 
   if (curve.controls.length > 0) {
+    stroke(handleColor.r, handleColor.g, handleColor.b);
     const firstControl = curve.controls[0];
     const lastControl = curve.controls[curve.controls.length - 1];
     line(curve.from.x, curve.from.y, firstControl.x, firstControl.y);

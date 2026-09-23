@@ -74,7 +74,7 @@ src/
     easings.js      31 easing curves from `eases`, v = ease(t)
     font/
       fonts.js      font discovery + async loading
-      curves.js     text -> contours -> Bézier curves, drawing + handles
+      curves.js     textToCurves(): contours of Bézier curves, drawing + handles
 ```
 
 Students edit `src/sketch.js` and `src/config.js`. When adding a feature,
@@ -132,5 +132,5 @@ fixed poster size. Don't add fixed dimensions to the config.
 
 - The **text** control is a single-line lil-gui field. A multi-line textarea
   is wanted but deliberately deferred.
-- `textToPoints()` / `textToContours()` examples are taught live during the
-  week rather than shipped in the template.
+- `sketch.js` ships a small `textToPoints()` / `textToContours()` dots
+  example next to the curves. Anything beyond that is taught live.
