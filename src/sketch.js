@@ -16,7 +16,15 @@
 import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { Easings } from './lib/easings.js';
-import { applyFont, defaultFont } from './lib/font/index.js';
+import {
+  applyFont,
+  defaultFont,
+  textToCurves,
+  drawCurves,
+  textToLetterContours,
+  getCenter,
+  placeAlongOutline,
+} from './lib/font/index.js';
 import { startingText, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
@@ -27,13 +35,43 @@ import { startingText, backgroundColor, foregroundColor } from './config.js';
 const params = {
   text: startingText,
   font: defaultFont,
-  textSize: 300,
+  textSize: 500,
   foregroundColor,
   backgroundColor,
-  animate: true,
+  animate: false,
+  sampleFrom: 'curves',
+  fillLetters: false,
+  showHandles: true,
+  waveAmplitude: 0,
+  waveFrequency: 3,
+  handleWobble: 0,
+  sampleFactor: 0.1,
+  showOutlineShapes: false,
+  outlineShapeSize: 80,
+  outlineShapeSpacing: 20,
+  outlineShapeSpeed: 80,
 };
 
+// Values the panel does not change. Tweak them here.
+
 const LOOP_SECONDS = 2;
+
+// radians per second
+const WAVE_SPEED = 2;
+
+// How far apart two handles must be before they drift differently. Smaller
+// means neighbouring handles move more alike.
+const NOISE_SCALE = 0.01;
+
+// Reading the noise a long way further along for y, so a handle does not
+// always move along the diagonal.
+const NOISE_OFFSET_FOR_Y = 100;
+
+const POINT_SIZE = 6;
+const redPointColor = { r: 255, g: 60, b: 60 };
+const bluePointColor = { r: 60, g: 120, b: 255 };
+
+const OUTLINE_SHAPE_SAMPLE_FACTOR = 0.3;
 
 let currentFont = null;
 
@@ -54,6 +92,7 @@ window.draw = function draw() {
   const timeInSeconds = millis() / 1000;
 
   translate(width / 2, height / 2);
+  textSize(params.textSize);
 
   if (params.animate) {
     //counts 0 to 1 over LOOP_SECONDS, then starts again at 0
@@ -65,11 +104,186 @@ window.draw = function draw() {
     scale(lerp(0.5, 1, timeEased));
   }
 
-  fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
-  noStroke();
-  textSize(params.textSize);
-  text(params.text, 0, 0);
+  //text() only until the font has loaded
+  if (!currentFont) {
+    fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+    text(params.text, 0, 0);
+    return;
+  }
+
+  if (params.sampleFrom === 'curves') drawFromCurves(timeInSeconds);
+  if (params.sampleFrom === 'textToContours') drawFromContours(timeInSeconds);
+  if (params.sampleFrom === 'textToPoints') drawFromPoints(timeInSeconds);
+
+  if (params.showOutlineShapes && params.sampleFrom !== 'textToPoints') {
+    drawOutlineShapes(timeInSeconds);
+  }
 };
+
+// THREE WAYS TO SAMPLE A LETTER
+//
+//   curves          the font's Bézier curves, with anchors and handles
+//   textToContours  points along each outline, grouped by outline, so fillable
+//   textToPoints    the same points in one list, so only drawable as points
+
+function drawFromCurves(timeInSeconds) {
+  const letters = textToCurves(currentFont, params.text, 0, 0);
+
+  //anchors first; their handles move with them, as in Illustrator
+  for (const letter of letters) {
+    //measured before anything moves, so the middle stays put
+    const center = getCenter(letter.flat().map((curve) => curve.from));
+
+    for (const contour of letter) {
+      contour.forEach((curve, curveIndex) => {
+        const nextCurve = contour[(curveIndex + 1) % contour.length];
+        const move = waveOutwards(curve.to, center, timeInSeconds);
+
+        const handleBefore = curve.controls[curve.controls.length - 1];
+        const handleAfter = nextCurve.controls[0];
+        for (const movingPoint of [curve.to, handleBefore, handleAfter]) {
+          if (!movingPoint) continue;
+          movingPoint.x += move.x;
+          movingPoint.y += move.y;
+        }
+      });
+    }
+  }
+
+  //then the handles on their own
+  for (const letter of letters) {
+    for (const contour of letter) {
+      for (const curve of contour) {
+        for (const handle of curve.controls) {
+          const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
+          handle.x += drift.x;
+          handle.y += drift.y;
+        }
+      }
+    }
+  }
+
+  setLetterStyle();
+  drawCurves(letters, { showHandles: params.showHandles });
+}
+
+function drawFromContours(timeInSeconds) {
+  const letters = textToLetterContours(currentFont, params.text, 0, 0, {
+    sampleFactor: params.sampleFactor,
+  });
+  waveLetters(letters, timeInSeconds);
+
+  //one shape with a contour per outline cuts out the counters
+  if (params.fillLetters) {
+    setLetterStyle();
+    beginShape();
+    for (const outline of letters.flat()) {
+      beginContour();
+      for (const textPoint of outline) {
+        vertex(textPoint.x, textPoint.y);
+      }
+      endContour(CLOSE);
+    }
+    endShape();
+    return;
+  }
+
+  //outlines alternate red and blue to show how p5 grouped them
+  noStroke();
+  letters.flat().forEach((outline, outlineIndex) => {
+    const pointColor = outlineIndex % 2 === 0 ? redPointColor : bluePointColor;
+    fill(pointColor.r, pointColor.g, pointColor.b);
+    for (const textPoint of outline) {
+      circle(textPoint.x, textPoint.y, POINT_SIZE);
+    }
+  });
+}
+
+function drawFromPoints(timeInSeconds) {
+  const textPoints = currentFont.textToPoints(params.text, 0, 0, {
+    sampleFactor: params.sampleFactor,
+  });
+
+  //one list has no letters, so the wave starts from the middle of the text
+  const center = getCenter(textPoints);
+  for (const textPoint of textPoints) {
+    const move = waveOutwards(textPoint, center, timeInSeconds);
+    textPoint.x += move.x;
+    textPoint.y += move.y;
+  }
+
+  noStroke();
+  fill(redPointColor.r, redPointColor.g, redPointColor.b);
+  for (const textPoint of textPoints) {
+    circle(textPoint.x, textPoint.y, POINT_SIZE);
+  }
+}
+
+// Filled letters, or just their outline, in the type color.
+function setLetterStyle() {
+  if (params.fillLetters) {
+    fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+    noStroke();
+  } else {
+    noFill();
+    stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  }
+  strokeWeight(1);
+}
+
+// THE WAVE
+//
+// Pushes a point out from `center` and back in, as a sine wave travelling
+// round the letter. waveFrequency is waves per turn, so whole numbers only.
+function waveOutwards(position, center, timeInSeconds) {
+  const outwards = p5.Vector.sub(createVector(position.x, position.y), center);
+  const wave = sin(outwards.heading() * params.waveFrequency + timeInSeconds * WAVE_SPEED);
+  return outwards.setMag(wave * params.waveAmplitude);
+}
+
+// The wave on every point, each from the middle of its own letter.
+function waveLetters(letters, timeInSeconds) {
+  for (const letter of letters) {
+    //measured before anything moves, so the middle stays put
+    const center = getCenter(letter.flat());
+    for (const outline of letter) {
+      for (const textPoint of outline) {
+        const move = waveOutwards(textPoint, center, timeInSeconds);
+        textPoint.x += move.x;
+        textPoint.y += move.y;
+      }
+    }
+  }
+}
+
+function noiseDrift(position, amount, timeInSeconds) {
+  const noiseX = position.x * NOISE_SCALE;
+  const noiseY = position.y * NOISE_SCALE;
+  const driftX = noise(noiseX, noiseY, timeInSeconds);
+  const driftY = noise(noiseX, noiseY, timeInSeconds + NOISE_OFFSET_FOR_Y);
+  return {
+    x: map(driftX, 0, 1, -amount, amount),
+    y: map(driftY, 0, 1, -amount, amount),
+  };
+}
+
+function drawOutlineShapes(timeInSeconds) {
+  const sampleFactor = params.sampleFrom === 'curves' ? OUTLINE_SHAPE_SAMPLE_FACTOR : params.sampleFactor;
+  const letters = textToLetterContours(currentFont, params.text, 0, 0, { sampleFactor });
+  waveLetters(letters, timeInSeconds);
+
+  const offset = timeInSeconds * params.outlineShapeSpeed;
+
+  noFill();
+  stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  strokeWeight(1);
+
+  for (const outline of letters.flat()) {
+    for (const spot of placeAlongOutline(outline, params.outlineShapeSpacing, offset)) {
+      circle(spot.x, spot.y, params.outlineShapeSize);
+    }
+  }
+}
 
 window.windowResized = function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
@@ -78,6 +292,43 @@ window.windowResized = function windowResized() {
 // This template's controls, added below the shared ones from src/lib/gui.js.
 function addControls(gui) {
   gui.add(params, 'animate');
+
+  const sampleFromControl = gui
+    .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
+    .name('sample from');
+
+  const fillControl = gui.add(params, 'fillLetters').name('fill');
+
+  const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
+
+  gui.add(params, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
+
+  gui.add(params, 'waveFrequency', 1, 12, 1).name('wave frequency');
+
+  const handlesControl = gui.add(params, 'showHandles').name('curve handles');
+
+  const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
+
+  const outlineShapesControl = gui.add(params, 'showOutlineShapes').name('outline shapes');
+
+  const outlineShapeSizeControl = gui.add(params, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
+
+  const outlineShapeSpacingControl = gui.add(params, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
+
+  const outlineShapeSpeedControl = gui.add(params, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
+
+  const greyOutUnusedControls = (sampleFrom) => {
+    fillControl.enable(sampleFrom !== 'textToPoints');
+    sampleFactorControl.enable(sampleFrom !== 'curves');
+    handlesControl.enable(sampleFrom === 'curves');
+    handleWobbleControl.enable(sampleFrom === 'curves');
+    outlineShapesControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSizeControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpacingControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpeedControl.enable(sampleFrom !== 'textToPoints');
+  };
+  sampleFromControl.onChange(greyOutUnusedControls);
+  greyOutUnusedControls(params.sampleFrom);
 }
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
