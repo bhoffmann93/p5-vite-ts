@@ -5,6 +5,13 @@
 // do come in reading order, one for every closed loop, so they can be handed
 // out one letter at a time.
 
+// p5's textToContours(), with the outlines sorted into letters: an array of
+// letters, each an array of outlines, each an array of { x, y } points.
+// `options` is passed on to p5, for example { sampleFactor: 0.1 }.
+export function textToLetterContours(font, str, x, y, options) {
+  return groupByLetter(font, str, font.textToContours(str, x, y, options));
+}
+
 // Sorts a list of contours, in reading order, into letters. Works for the
 // curves from textToCurves() and for the points from p5's textToContours().
 // Each letter gets as many contours as it has when drawn on its own: 2 for

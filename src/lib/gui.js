@@ -46,7 +46,7 @@ export function createGUI({ params, onFontChange }) {
     .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
     .name('sample from');
 
-  const fillControl = gui.add(params, 'fill');
+  const fillControl = gui.add(params, 'fillLetters').name('fill');
 
   //how many points per pixel of outline, the option p5 calls sampleFactor
   const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
@@ -59,14 +59,31 @@ export function createGUI({ params, onFontChange }) {
 
   const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
 
+  //rounded rectangles travelling along the outlines
+  const outlineShapesControl = gui.add(params, 'showOutlineShapes').name('outline shapes');
+
+  //how big across each circle is, in pixels
+  const outlineShapeSizeControl = gui.add(params, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
+
+  //the gap from one shape to the next, in pixels
+  const outlineShapeSpacingControl = gui.add(params, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
+
+  //in pixels per second
+  const outlineShapeSpeedControl = gui.add(params, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
+
   //not every control works with every way of sampling, so the ones that would
   //do nothing are greyed out. textToPoints cannot be filled, only curves have
-  //handles, and only the two p5 options use a sample factor.
+  //handles, only the two p5 options use a sample factor, and textToPoints
+  //does not know where an outline ends, so no shapes can travel along one.
   const greyOutUnusedControls = (sampleFrom) => {
     fillControl.enable(sampleFrom !== 'textToPoints');
     sampleFactorControl.enable(sampleFrom !== 'curves');
     handlesControl.enable(sampleFrom === 'curves');
     handleWobbleControl.enable(sampleFrom === 'curves');
+    outlineShapesControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSizeControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpacingControl.enable(sampleFrom !== 'textToPoints');
+    outlineShapeSpeedControl.enable(sampleFrom !== 'textToPoints');
   };
   sampleFromControl.onChange(greyOutUnusedControls);
   greyOutUnusedControls(params.sampleFrom);

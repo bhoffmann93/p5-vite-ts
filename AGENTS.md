@@ -73,14 +73,47 @@ src/
     export.js       timestamp() + savePNG()
     easings.js      31 easing curves from `eases`, v = ease(t)
     font/
+      index.js      re-exports everything below; sketches import from here
       fonts.js      font discovery + async loading
       curves.js     textToCurves(): letters > contours > Bézier curves, drawing + handles
-      letters.js    groupByLetter() + getCenter(), shared by curves and points
+      letters.js    textToLetterContours(), groupByLetter(), getCenter()
+      outlines.js   placeAlongOutline(), placeAtDistance(), getOutlineLength()
 ```
 
 Students edit `src/sketch.js` and `src/config.js`. When adding a feature,
 prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 `src/lib/`.
+
+## The font library
+
+`src/lib/font/` is a small library students use (often through an AI
+assistant) to take letters apart. When a student asks for something it
+covers, use it instead of writing new geometry code, and import from
+`./lib/font/index.js`. Each file's header comment is its documentation;
+keep it current when a function changes.
+
+| Task | Use |
+| --- | --- |
+| The font's Bézier curves (anchors, handles), to draw or deform | `textToCurves(font, str, x, y)` then `drawCurves(letters, { showHandles })` |
+| Points along the outlines, sorted by letter | `textToLetterContours(font, str, x, y, { sampleFactor })` |
+| The middle of a letter, e.g. to push points away from it | `getCenter(positions)` |
+| Shapes at even spacing along an outline, or moving along it | `placeAlongOutline(outline, spacing, offset)` gives `{ x, y, angle }` spots |
+| All the points in one flat list, no grouping | p5's own `font.textToPoints()` |
+
+Vocabulary, used in names and comments: a **letter** holds **contours**
+(closed outlines; the hole in "A" is the **counter**). With curves, a
+contour holds **curves** `{ from, controls, to }`: `from`/`to` are
+**anchors**, `controls` are **handles**, as in Illustrator. With points, a
+contour is a list of `{ x, y }`. Do not call curves "segments" and do not
+rename p5 options (it is `sampleFactor`, not "density").
+
+All positions are plain `{ x, y }` objects, so students deform letters by
+changing them between getting and drawing. A curve's `to` is the same
+object as the next curve's `from`, so moving it moves both.
+
+`sketch.js` draws everything around `translate(width / 2, height / 2)`,
+with the letters at `0, 0`. The animate option uses `scale()` there, not
+`textSize()`.
 
 ## Things that will bite you
 
@@ -133,5 +166,6 @@ fixed poster size. Don't add fixed dimensions to the config.
 
 - The **text** control is a single-line lil-gui field. A multi-line textarea
   is wanted but deliberately deferred.
-- `sketch.js` ships a small `textToPoints()` / `textToContours()` dots
-  example next to the curves. Anything beyond that is taught live.
+- `sketch.js` on this branch is a showcase of the font library (three
+  sampling modes, a wave, outline shapes). The plan is to strip it back to a
+  minimal sketch for students and keep `src/lib/font/` as the library.
