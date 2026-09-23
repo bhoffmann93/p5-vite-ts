@@ -93,6 +93,7 @@ prefer putting the *knob* in `sketch.js`'s `params` and the *wiring* in
 | Task | Use |
 | --- | --- |
 | The font's Bézier curves (anchors, handles), to draw or deform | `textToCurves(font, str, x, y)` then `drawCurves(letters, { showHandles })` |
+| Move an anchor and its handles together | `moveAnchor(contour, curveIndex, { x, y })` |
 | Points along the outlines, sorted by letter | `textToLetterContours(font, str, x, y, { sampleFactor })` |
 | The middle of a letter, e.g. to push points away from it | `getCenter(positions)` |
 | Shapes at even spacing along an outline, or moving along it | `placeAlongOutline(outline, spacing, offset)` gives `{ x, y, angle }` spots |
