@@ -25,14 +25,16 @@ void main() {
   vec2 indexN = index.xy / tiles.xy; //[0.0,<1.0]
 
   vec2 offsetAmplitude = vec2(0.02, 0.005);
-  vec2 waveFreq = vec2(10.0);
+  vec2 waveFreq = vec2(8.0, 8.0);
 
   vec2 gridUv = fract(uv * tiles.xy);
   vec2 textureUv = uv;
-  textureUv.x -= sin(indexN.y * PI * waveFreq.x - uTime) * offsetAmplitude.x;
-  textureUv.y -= sin(indexN.x * PI * waveFreq.y - uTime) * offsetAmplitude.y;
-  vec2 noise = (hash22(gl_FragCoord.xy) - 0.5);
-  textureUv -= noise * 0.01;
+  //grid distort
+  // textureUv.x -= sin(indexN.y * PI * waveFreq.x - uTime) * offsetAmplitude.x;
+  // textureUv.y -= sin(indexN.x * PI * waveFreq.y - uTime) * offsetAmplitude.y;
+  //wave distort
+  textureUv.x -= sin(uv.y * PI * waveFreq.x - uTime) * offsetAmplitude.x;
+  textureUv.y -= sin(uv.x * PI * waveFreq.y - uTime) * offsetAmplitude.y;
 
   vec3 color = texture(uSketchTexture, textureUv).rgb;
 
