@@ -13,7 +13,8 @@ Practical consequences:
 
 - **No TypeScript, no ESLint, no test framework.** These were deliberately
   removed. Do not reintroduce them or suggest doing so.
-- **Keep the dependency list tiny** (`p5`, `lil-gui`, `vite`).
+- **Keep the dependency list tiny** (`p5`, `lil-gui`, `vite`, and on the
+  `shader` branch `vite-plugin-glsl`).
   A new dependency is a new thing that can fail on a student's laptop.
 - Comments explain *why* in plain language. Keep that register.
 
