@@ -73,12 +73,14 @@ window.draw = function draw() {
 
   if (uiParams.animate) {
     //counts 0 to 1 over loopSeconds, then starts again at 0
-    const timeLoop01 = (timeInSeconds / loopSeconds) % 1;
-    const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
+    const loopTime = (timeInSeconds / loopSeconds) % 1;
+    //0 to 1 and back to 0
+    const backAndForthTime = 1 - abs(loopTime * 2 - 1);
 
+    //still 0 to 1, but speeding up and slowing down
     //try bounceOut or elasticOut instead of backInOut
-    const timeEased = Easings.backInOut(timePingPong);
-    scale(lerp(0.5, 1, timeEased));
+    const easedTime = Easings.backInOut(backAndForthTime);
+    scale(lerp(0.5, 1, easedTime));
   }
 
   //text() only until the font has loaded
@@ -91,20 +93,36 @@ window.draw = function draw() {
   //letters > contours > curves, see textToCurves() in src/lib/font/
   const letters = textToCurves(currentFont, uiParams.text, 0, 0);
 
-  //anchors first; their handles move with them, as in Illustrator
-  for (const contour of letters.flat()) {
-    contour.forEach((curve, curveIndex) => {
-      const drift = noiseDrift(curve.to, uiParams.anchorWobble, timeInSeconds);
-      moveAnchor(contour, curveIndex, drift);
-    });
-  }
+  for (let letterIndex = 0; letterIndex < letters.length; letterIndex++) {
+    const letter = letters[letterIndex];
 
-  //then the handles on their own, every curve of every letter
-  for (const curve of letters.flat(2)) {
-    for (const handle of curve.controls) {
-      const drift = noiseDrift(handle, uiParams.handleWobble, timeInSeconds);
-      handle.x += drift.x;
-      handle.y += drift.y;
+    //a letter can have several contours, e.g. the outside of an "A" and its counter
+    for (let contourIndex = 0; contourIndex < letter.length; contourIndex++) {
+      const contour = letter[contourIndex];
+
+      //anchors first; their handles move with them, as in Illustrator
+      for (let curveIndex = 0; curveIndex < contour.length; curveIndex++) {
+        const curve = contour[curveIndex];
+        //each curve runs from one anchor to the next; `to` is the anchor at its end
+        const anchor = curve.to;
+
+        const anchorDrift = noiseDrift(anchor, uiParams.anchorWobble, timeInSeconds);
+        moveAnchor(contour, curveIndex, anchorDrift);
+      }
+
+      //then the handles on their own
+      for (let curveIndex = 0; curveIndex < contour.length; curveIndex++) {
+        const curve = contour[curveIndex];
+
+        //a curve has two handles, a straight line none
+        for (let handleIndex = 0; handleIndex < curve.controls.length; handleIndex++) {
+          const handle = curve.controls[handleIndex];
+
+          const handleDrift = noiseDrift(handle, uiParams.handleWobble, timeInSeconds);
+          handle.x += handleDrift.x;
+          handle.y += handleDrift.y;
+        }
+      }
     }
   }
 
@@ -124,14 +142,15 @@ function setLetterStyle() {
   strokeWeight(1);
 }
 
-// How far a point moves, between -amount and +amount, following noise().
-function noiseDrift(position, amount, timeInSeconds) {
-  const noiseX = position.x * noiseScale;
-  const noiseY = position.y * noiseScale;
+// How far a point moves, between -maxDistance and +maxDistance, following noise().
+function noiseDrift(position, maxDistance, timeInSeconds) {
+  //where in the noise this point reads, so each point gets its own value
+  const noiseInputX = position.x * noiseScale;
+  const noiseInputY = position.y * noiseScale;
 
-  //noise() gives 0 to 1, map() turns that into -amount to +amount
-  let driftX = map(noise(noiseX, noiseY, timeInSeconds), 0, 1, -amount, amount);
-  let driftY = map(noise(noiseX, noiseY, timeInSeconds + noiseOffsetForY), 0, 1, -amount, amount);
+  //noise() gives 0 to 1, map() turns that into -maxDistance to +maxDistance
+  let driftX = map(noise(noiseInputX, noiseInputY, timeInSeconds), 0, 1, -maxDistance, maxDistance);
+  let driftY = map(noise(noiseInputX, noiseInputY, timeInSeconds + noiseOffsetForY), 0, 1, -maxDistance, maxDistance);
 
   return { x: driftX, y: driftY };
 }
