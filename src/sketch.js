@@ -8,8 +8,8 @@
 //   draw()   runs about 60 times a second, forever. Animation lives here.
 //
 // The text is turned into points along each letter's outlines. The points
-// wobble, and can be drawn as dots, as a filled letter, or with circles
-// travelling along the outline. The font tools live in src/lib/font/.
+// wobble, and can be drawn as dots or as a filled letter.
+// The font tools live in src/lib/font/.
 //
 // Note: this is p5 version 2. If you find a tutorial that uses `preload()`,
 // it is written for p5 version 1 and will not work here. See the README.
@@ -17,7 +17,7 @@
 import p5 from 'p5';
 import { createGUI } from './lib/gui.js';
 import { Easings } from './lib/easings.js';
-import { applyFont, defaultFont, textToLetterContours, placeAlongOutline } from './lib/font/index.js';
+import { applyFont, defaultFont, textToLetterContours } from './lib/font/index.js';
 import { startingText, backgroundColor, foregroundColor } from './config.js';
 
 // The values the control panel changes. Add your own here, then add a line
@@ -35,10 +35,6 @@ const uiParams = {
   fillLetters: false,
   sampleFactor: 0.1,
   pointWobble: 10,
-  showOutlineShapes: false,
-  outlineShapeSize: 80,
-  outlineShapeSpacing: 20,
-  outlineShapeSpeed: 80,
 };
 
 // Values the panel does not change. Tweak them here.
@@ -80,12 +76,14 @@ window.draw = function draw() {
 
   if (uiParams.animate) {
     //counts 0 to 1 over loopSeconds, then starts again at 0
-    const timeLoop01 = (timeInSeconds / loopSeconds) % 1;
-    const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
+    const loopTime = (timeInSeconds / loopSeconds) % 1;
+    //0 to 1 and back to 0
+    const backAndForthTime = 1 - abs(loopTime * 2 - 1);
 
+    //still 0 to 1, but speeding up and slowing down
     //try bounceOut or elasticOut instead of backInOut
-    const timeEased = Easings.backInOut(timePingPong);
-    scale(lerp(0.5, 1, timeEased));
+    const easedTime = Easings.backInOut(backAndForthTime);
+    scale(lerp(0.5, 1, easedTime));
   }
 
   //text() only until the font has loaded
@@ -106,39 +104,57 @@ window.draw = function draw() {
   } else {
     drawPoints(letters);
   }
-
-  if (uiParams.showOutlineShapes) {
-    drawOutlineShapes(letters, timeInSeconds);
-  }
 };
 
 // Moves every point a little, each in its own direction, following noise().
 function wobblePoints(letters, timeInSeconds) {
-  for (const outline of letters.flat()) {
-    for (const textPoint of outline) {
-      const noiseX = textPoint.x * noiseScale;
-      const noiseY = textPoint.y * noiseScale;
+  for (let letterIndex = 0; letterIndex < letters.length; letterIndex++) {
+    const letter = letters[letterIndex];
 
-      //noise() gives 0 to 1, map() turns that into -pointWobble to +pointWobble
-      let driftX = map(noise(noiseX, noiseY, timeInSeconds), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
-      let driftY = map(noise(noiseX, noiseY, timeInSeconds + noiseOffsetForY), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
+    //a letter can have several outlines, e.g. the outside of an "A" and its counter
+    for (let outlineIndex = 0; outlineIndex < letter.length; outlineIndex++) {
+      const outline = letter[outlineIndex];
 
-      textPoint.x += driftX;
-      textPoint.y += driftY;
+      for (let pointIndex = 0; pointIndex < outline.length; pointIndex++) {
+        const textPoint = outline[pointIndex];
+
+        //where in the noise this point reads, so each point gets its own value
+        const noiseInputX = textPoint.x * noiseScale;
+        const noiseInputY = textPoint.y * noiseScale;
+
+        //noise() gives 0 to 1, map() turns that into -pointWobble to +pointWobble
+        let driftX = map(noise(noiseInputX, noiseInputY, timeInSeconds), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
+        let driftY = map(noise(noiseInputX, noiseInputY, timeInSeconds + noiseOffsetForY), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
+
+        textPoint.x += driftX;
+        textPoint.y += driftY;
+      }
     }
   }
 }
 
 function drawPoints(letters) {
-  //outlines alternate red and blue to show how p5 grouped them
   noStroke();
-  letters.flat().forEach((outline, outlineIndex) => {
-    const pointColor = outlineIndex % 2 === 0 ? redPointColor : bluePointColor;
-    fill(pointColor.r, pointColor.g, pointColor.b);
-    for (const textPoint of outline) {
-      circle(textPoint.x, textPoint.y, pointSize);
+
+  for (let letterIndex = 0; letterIndex < letters.length; letterIndex++) {
+    const letter = letters[letterIndex];
+
+    for (let outlineIndex = 0; outlineIndex < letter.length; outlineIndex++) {
+      const outline = letter[outlineIndex];
+
+      //outlines alternate red and blue to show how p5 grouped them
+      let pointColor = redPointColor;
+      if (outlineIndex % 2 === 1) {
+        pointColor = bluePointColor;
+      }
+      fill(pointColor.r, pointColor.g, pointColor.b);
+
+      for (let pointIndex = 0; pointIndex < outline.length; pointIndex++) {
+        const textPoint = outline[pointIndex];
+        circle(textPoint.x, textPoint.y, pointSize);
+      }
     }
-  });
+  }
 }
 
 function drawFilledLetters(letters) {
@@ -147,30 +163,21 @@ function drawFilledLetters(letters) {
 
   //one shape with a contour per outline cuts out the counters
   beginShape();
-  for (const outline of letters.flat()) {
-    beginContour();
-    for (const textPoint of outline) {
-      vertex(textPoint.x, textPoint.y);
+  for (let letterIndex = 0; letterIndex < letters.length; letterIndex++) {
+    const letter = letters[letterIndex];
+
+    for (let outlineIndex = 0; outlineIndex < letter.length; outlineIndex++) {
+      const outline = letter[outlineIndex];
+
+      beginContour();
+      for (let pointIndex = 0; pointIndex < outline.length; pointIndex++) {
+        const textPoint = outline[pointIndex];
+        vertex(textPoint.x, textPoint.y);
+      }
+      endContour(CLOSE);
     }
-    endContour(CLOSE);
   }
   endShape();
-}
-
-// Circles at even spacing along every outline, travelling round it over time.
-function drawOutlineShapes(letters, timeInSeconds) {
-  const offset = timeInSeconds * uiParams.outlineShapeSpeed;
-
-  noFill();
-  stroke(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
-  strokeWeight(1);
-
-  for (const outline of letters.flat()) {
-    for (const spot of placeAlongOutline(outline, uiParams.outlineShapeSpacing, offset)) {
-      let diameter = uiParams.outlineShapeSize;
-      circle(spot.x, spot.y, diameter);
-    }
-  }
 }
 
 window.windowResized = function windowResized() {
@@ -183,10 +190,6 @@ function addControls(gui) {
   gui.add(uiParams, 'fillLetters').name('fill');
   gui.add(uiParams, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
   gui.add(uiParams, 'pointWobble', 0, 100, 1).name('point wobble');
-  gui.add(uiParams, 'showOutlineShapes').name('outline shapes');
-  gui.add(uiParams, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
-  gui.add(uiParams, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
-  gui.add(uiParams, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
 }
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
