@@ -7,9 +7,8 @@
 //   setup()  runs once, at the start.
 //   draw()   runs about 60 times a second, forever. Animation lives here.
 //
-// The text is turned into points along each letter's outlines. The points
-// wobble, and can be drawn as dots, as a filled letter, or with circles
-// travelling along the outline. The font tools live in src/lib/font/.
+// Circles at even spacing along each letter's outlines, travelling round
+// them over time. The font tools live in src/lib/font/.
 //
 // Note: this is p5 version 2. If you find a tutorial that uses `preload()`,
 // it is written for p5 version 1 and will not work here. See the README.
@@ -32,10 +31,6 @@ const uiParams = {
   foregroundColor,
   backgroundColor,
   animate: false,
-  fillLetters: false,
-  sampleFactor: 0.1,
-  pointWobble: 10,
-  showOutlineShapes: false,
   outlineShapeSize: 80,
   outlineShapeSpacing: 20,
   outlineShapeSpeed: 80,
@@ -45,17 +40,8 @@ const uiParams = {
 
 let loopSeconds = 2;
 
-// How far apart two points must be before they wobble differently. Smaller
-// means neighbouring points move more alike.
-let noiseScale = 0.01;
-
-// Reading the noise a long way further along for y, so a point does not
-// always move along the diagonal.
-let noiseOffsetForY = 100;
-
-let pointSize = 6;
-let redPointColor = { r: 255, g: 60, b: 60 };
-let bluePointColor = { r: 60, g: 120, b: 255 };
+// How closely the outline follows the letter. Higher is smoother but slower.
+let outlineSampleFactor = 0.3;
 
 let currentFont = null;
 
@@ -97,81 +83,37 @@ window.draw = function draw() {
 
   //letters > outlines > points, see textToLetterContours() in src/lib/font/
   const letters = textToLetterContours(currentFont, uiParams.text, 0, 0, {
-    sampleFactor: uiParams.sampleFactor,
+    sampleFactor: outlineSampleFactor,
   });
-  wobblePoints(letters, timeInSeconds);
 
-  if (uiParams.fillLetters) {
-    drawFilledLetters(letters);
-  } else {
-    drawPoints(letters);
-  }
-
-  if (uiParams.showOutlineShapes) {
-    drawOutlineShapes(letters, timeInSeconds);
-  }
-};
-
-// Moves every point a little, each in its own direction, following noise().
-function wobblePoints(letters, timeInSeconds) {
-  for (const outline of letters.flat()) {
-    for (const textPoint of outline) {
-      const noiseX = textPoint.x * noiseScale;
-      const noiseY = textPoint.y * noiseScale;
-
-      //noise() gives 0 to 1, map() turns that into -pointWobble to +pointWobble
-      let driftX = map(noise(noiseX, noiseY, timeInSeconds), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
-      let driftY = map(noise(noiseX, noiseY, timeInSeconds + noiseOffsetForY), 0, 1, -uiParams.pointWobble, uiParams.pointWobble);
-
-      textPoint.x += driftX;
-      textPoint.y += driftY;
-    }
-  }
-}
-
-function drawPoints(letters) {
-  //outlines alternate red and blue to show how p5 grouped them
-  noStroke();
-  letters.flat().forEach((outline, outlineIndex) => {
-    const pointColor = outlineIndex % 2 === 0 ? redPointColor : bluePointColor;
-    fill(pointColor.r, pointColor.g, pointColor.b);
-    for (const textPoint of outline) {
-      circle(textPoint.x, textPoint.y, pointSize);
-    }
-  });
-}
-
-function drawFilledLetters(letters) {
-  fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
-  noStroke();
-
-  //one shape with a contour per outline cuts out the counters
-  beginShape();
-  for (const outline of letters.flat()) {
-    beginContour();
-    for (const textPoint of outline) {
-      vertex(textPoint.x, textPoint.y);
-    }
-    endContour(CLOSE);
-  }
-  endShape();
-}
-
-// Circles at even spacing along every outline, travelling round it over time.
-function drawOutlineShapes(letters, timeInSeconds) {
-  const offset = timeInSeconds * uiParams.outlineShapeSpeed;
+  //how far the circles have travelled round the outline, in pixels
+  const travelledDistance = timeInSeconds * uiParams.outlineShapeSpeed;
 
   noFill();
   stroke(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
   strokeWeight(1);
 
-  for (const outline of letters.flat()) {
-    for (const spot of placeAlongOutline(outline, uiParams.outlineShapeSpacing, offset)) {
-      let diameter = uiParams.outlineShapeSize;
-      circle(spot.x, spot.y, diameter);
+  for (let letterIndex = 0; letterIndex < letters.length; letterIndex++) {
+    const letter = letters[letterIndex];
+    const normalizedLetterIndex = letterIndex / letters.length; //0.0-1.0 like percentage
+
+    //a letter can have several outlines, e.g. the outside of an "A" and its counter
+    for (let outlineIndex = 0; outlineIndex < letter.length; outlineIndex++) {
+      const outline = letter[outlineIndex];
+      const positionsOnCurve = placeAlongOutline(outline, uiParams.outlineShapeSpacing, travelledDistance);
+
+      for (let circleIndex = 0; circleIndex < positionsOnCurve.length; circleIndex++) {
+        const positionOnCurve = positionsOnCurve[circleIndex];
+        const normalizedCircleIndex = circleIndex / positionsOnCurve.length; //0.0-1.0 like percentage
+
+        //a p5 vector, so you can add(), mult() or rotate() the position
+        let circlePosition = createVector(positionOnCurve.x, positionOnCurve.y);
+        let circleDiameter = uiParams.outlineShapeSize;
+        circle(circlePosition.x, circlePosition.y, circleDiameter);
+      }
     }
   }
-}
+};
 
 window.windowResized = function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
@@ -180,10 +122,6 @@ window.windowResized = function windowResized() {
 // This template's controls, added below the shared ones from src/lib/gui.js.
 function addControls(gui) {
   gui.add(uiParams, 'animate');
-  gui.add(uiParams, 'fillLetters').name('fill');
-  gui.add(uiParams, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
-  gui.add(uiParams, 'pointWobble', 0, 100, 1).name('point wobble');
-  gui.add(uiParams, 'showOutlineShapes').name('outline shapes');
   gui.add(uiParams, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
   gui.add(uiParams, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
   gui.add(uiParams, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
