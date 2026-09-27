@@ -57,12 +57,14 @@ window.draw = function draw() {
 
   if (uiParams.animate) {
     //counts 0 to 1 over loopSeconds, then starts again at 0
-    const timeLoop01 = (timeInSeconds / loopSeconds) % 1;
-    const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
+    const loopTime = (timeInSeconds / loopSeconds) % 1;
+    //0 to 1 and back to 0
+    const backAndForthTime = 1 - abs(loopTime * 2 - 1);
 
+    //still 0 to 1, but speeding up and slowing down
     //try bounceOut or elasticOut instead of backInOut
-    const timeEased = Easings.backInOut(timePingPong);
-    scale(lerp(0.5, 1, timeEased));
+    const easedTime = Easings.backInOut(backAndForthTime);
+    scale(lerp(0.5, 1, easedTime));
   }
 
   fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
@@ -82,5 +84,5 @@ function addControls(gui) {
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ params: uiParams, onFontChange: changeFont, addControls });
+createGUI({ uiParams: uiParams, onFontChange: changeFont, addControls });
 new p5();
