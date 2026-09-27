@@ -24,7 +24,7 @@ import { startingText, backgroundColor, foregroundColor } from './config.js';
 //
 // The colors start at whatever you set in src/config.js, and are { r, g, b }
 // objects, each channel a number from 0 to 255.
-const params = {
+const uiParams = {
   text: startingText,
   font: defaultFont,
   textSize: 300,
@@ -33,7 +33,7 @@ const params = {
   animate: true,
 };
 
-const LOOP_SECONDS = 2;
+let loopSeconds = 2;
 
 let currentFont = null;
 
@@ -46,18 +46,18 @@ window.setup = async function setup() {
   textAlign(CENTER, CENTER);
 
   //loading a font takes a moment, so we wait for it before drawing
-  await changeFont(params.font);
+  await changeFont(uiParams.font);
 };
 
 window.draw = function draw() {
-  background(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b);
-  const timeInSeconds = millis() / 1000;
+  background(uiParams.backgroundColor.r, uiParams.backgroundColor.g, uiParams.backgroundColor.b);
+  let timeInSeconds = millis() / 1000;
 
   translate(width / 2, height / 2);
 
-  if (params.animate) {
-    //counts 0 to 1 over LOOP_SECONDS, then starts again at 0
-    const timeLoop01 = (timeInSeconds / LOOP_SECONDS) % 1;
+  if (uiParams.animate) {
+    //counts 0 to 1 over loopSeconds, then starts again at 0
+    const timeLoop01 = (timeInSeconds / loopSeconds) % 1;
     const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
 
     //try bounceOut or elasticOut instead of backInOut
@@ -65,10 +65,10 @@ window.draw = function draw() {
     scale(lerp(0.5, 1, timeEased));
   }
 
-  fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
   noStroke();
-  textSize(params.textSize);
-  text(params.text, 0, 0);
+  textSize(uiParams.textSize);
+  text(uiParams.text, 0, 0);
 };
 
 window.windowResized = function windowResized() {
@@ -77,10 +77,10 @@ window.windowResized = function windowResized() {
 
 // This template's controls, added below the shared ones from src/lib/gui.js.
 function addControls(gui) {
-  gui.add(params, 'animate');
+  gui.add(uiParams, 'animate');
 }
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ params, onFontChange: changeFont, addControls });
+createGUI({ params: uiParams, onFontChange: changeFont, addControls });
 new p5();

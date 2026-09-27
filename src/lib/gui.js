@@ -3,16 +3,16 @@
 //
 // The shared part of the panel: text, font, size, colors, export and hotkeys.
 // Your own controls go in addControls() in src/sketch.js:
-//   1. add the value to `params`
+//   1. add the value to `uiParams`
 //   2. add one line in addControls()
 //
 // lil-gui picks the kind of control from the value you give it:
 //
-//   gui.add(params, 'speed', 0, 10, 0.1);     a number  -> slider from 0 to 10, stepping 0.1
-//   gui.add(params, 'showGrid');              true/false -> checkbox
-//   gui.add(params, 'words');                 text      -> text field
-//   gui.add(params, 'easing', easingNames);   a list    -> dropdown
-//   gui.addColor(params, 'accent', 255);                -> color picker
+//   gui.add(uiParams, 'speed', 0, 10, 0.1);     a number  -> slider from 0 to 10, stepping 0.1
+//   gui.add(uiParams, 'showGrid');              true/false -> checkbox
+//   gui.add(uiParams, 'words');                 text      -> text field
+//   gui.add(uiParams, 'easing', easingNames);   a list    -> dropdown
+//   gui.addColor(uiParams, 'accent', 255);                -> color picker
 //
 // Add .name('Label') when the property name is not what you want to read.
 
