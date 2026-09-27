@@ -71,7 +71,7 @@ window.draw = function draw() {
 };
 
 function drawModule(module, x, y, cellWidth, cellHeight) {
-  const time = millis() / 1000.0; //in seconds
+  let time = millis() / 1000.0; //in seconds
   noStroke();
   fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
 
