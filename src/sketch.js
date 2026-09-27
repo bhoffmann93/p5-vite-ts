@@ -33,7 +33,7 @@ import { startingText, backgroundColor, foregroundColor } from './config.js';
 //
 // The colors start at whatever you set in src/config.js, and are { r, g, b }
 // objects, each channel a number from 0 to 255.
-const params = {
+const uiParams = {
   text: startingText,
   font: defaultFont,
   textSize: 500,
@@ -55,24 +55,24 @@ const params = {
 
 // Values the panel does not change. Tweak them here.
 
-const LOOP_SECONDS = 2;
+let loopSeconds = 2;
 
 // radians per second
-const WAVE_SPEED = 2;
+let waveSpeed = 2;
 
 // How far apart two handles must be before they drift differently. Smaller
 // means neighbouring handles move more alike.
-const NOISE_SCALE = 0.01;
+let noiseScale = 0.01;
 
 // Reading the noise a long way further along for y, so a handle does not
 // always move along the diagonal.
-const NOISE_OFFSET_FOR_Y = 100;
+let noiseOffsetForY = 100;
 
-const POINT_SIZE = 6;
-const redPointColor = { r: 255, g: 60, b: 60 };
-const bluePointColor = { r: 60, g: 120, b: 255 };
+let pointSize = 6;
+let redPointColor = { r: 255, g: 60, b: 60 };
+let bluePointColor = { r: 60, g: 120, b: 255 };
 
-const OUTLINE_SHAPE_SAMPLE_FACTOR = 0.3;
+let outlineShapeSampleFactor = 0.3;
 
 let currentFont = null;
 
@@ -85,19 +85,19 @@ window.setup = async function setup() {
   textAlign(CENTER, CENTER);
 
   //loading a font takes a moment, so we wait for it before drawing
-  await changeFont(params.font);
+  await changeFont(uiParams.font);
 };
 
 window.draw = function draw() {
-  background(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b);
-  const timeInSeconds = millis() / 1000;
+  background(uiParams.backgroundColor.r, uiParams.backgroundColor.g, uiParams.backgroundColor.b);
+  let timeInSeconds = millis() / 1000;
 
   translate(width / 2, height / 2);
-  textSize(params.textSize);
+  textSize(uiParams.textSize);
 
-  if (params.animate) {
-    //counts 0 to 1 over LOOP_SECONDS, then starts again at 0
-    const timeLoop01 = (timeInSeconds / LOOP_SECONDS) % 1;
+  if (uiParams.animate) {
+    //counts 0 to 1 over loopSeconds, then starts again at 0
+    const timeLoop01 = (timeInSeconds / loopSeconds) % 1;
     const timePingPong = 1 - abs(timeLoop01 * 2 - 1);
 
     //try bounceOut or elasticOut instead of backInOut
@@ -107,16 +107,16 @@ window.draw = function draw() {
 
   //text() only until the font has loaded
   if (!currentFont) {
-    fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
-    text(params.text, 0, 0);
+    fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
+    text(uiParams.text, 0, 0);
     return;
   }
 
-  if (params.sampleFrom === 'curves') drawFromCurves(timeInSeconds);
-  if (params.sampleFrom === 'textToContours') drawFromContours(timeInSeconds);
-  if (params.sampleFrom === 'textToPoints') drawFromPoints(timeInSeconds);
+  if (uiParams.sampleFrom === 'curves') drawFromCurves(timeInSeconds);
+  if (uiParams.sampleFrom === 'textToContours') drawFromContours(timeInSeconds);
+  if (uiParams.sampleFrom === 'textToPoints') drawFromPoints(timeInSeconds);
 
-  if (params.showOutlineShapes && params.sampleFrom !== 'textToPoints') {
+  if (uiParams.showOutlineShapes && uiParams.sampleFrom !== 'textToPoints') {
     drawOutlineShapes(timeInSeconds);
   }
 };
@@ -128,7 +128,7 @@ window.draw = function draw() {
 //   textToPoints    the same points in one list, so only drawable as points
 
 function drawFromCurves(timeInSeconds) {
-  const letters = textToCurves(currentFont, params.text, 0, 0);
+  const letters = textToCurves(currentFont, uiParams.text, 0, 0);
 
   //anchors first; their handles move with them, as in Illustrator
   for (const letter of letters) {
@@ -146,24 +146,24 @@ function drawFromCurves(timeInSeconds) {
   //then the handles on their own, every curve of every letter
   for (const curve of letters.flat(2)) {
     for (const handle of curve.controls) {
-      const drift = noiseDrift(handle, params.handleWobble, timeInSeconds);
+      const drift = noiseDrift(handle, uiParams.handleWobble, timeInSeconds);
       handle.x += drift.x;
       handle.y += drift.y;
     }
   }
 
   setLetterStyle();
-  drawCurves(letters, { showHandles: params.showHandles });
+  drawCurves(letters, { showHandles: uiParams.showHandles });
 }
 
 function drawFromContours(timeInSeconds) {
-  const letters = textToLetterContours(currentFont, params.text, 0, 0, {
-    sampleFactor: params.sampleFactor,
+  const letters = textToLetterContours(currentFont, uiParams.text, 0, 0, {
+    sampleFactor: uiParams.sampleFactor,
   });
   waveLetters(letters, timeInSeconds);
 
   //one shape with a contour per outline cuts out the counters
-  if (params.fillLetters) {
+  if (uiParams.fillLetters) {
     setLetterStyle();
     beginShape();
     for (const outline of letters.flat()) {
@@ -183,14 +183,14 @@ function drawFromContours(timeInSeconds) {
     const pointColor = outlineIndex % 2 === 0 ? redPointColor : bluePointColor;
     fill(pointColor.r, pointColor.g, pointColor.b);
     for (const textPoint of outline) {
-      circle(textPoint.x, textPoint.y, POINT_SIZE);
+      circle(textPoint.x, textPoint.y, pointSize);
     }
   });
 }
 
 function drawFromPoints(timeInSeconds) {
-  const textPoints = currentFont.textToPoints(params.text, 0, 0, {
-    sampleFactor: params.sampleFactor,
+  const textPoints = currentFont.textToPoints(uiParams.text, 0, 0, {
+    sampleFactor: uiParams.sampleFactor,
   });
 
   //one list has no letters, so the wave starts from the middle of the text
@@ -204,18 +204,18 @@ function drawFromPoints(timeInSeconds) {
   noStroke();
   fill(redPointColor.r, redPointColor.g, redPointColor.b);
   for (const textPoint of textPoints) {
-    circle(textPoint.x, textPoint.y, POINT_SIZE);
+    circle(textPoint.x, textPoint.y, pointSize);
   }
 }
 
 // Filled letters, or just their outline, in the type color.
 function setLetterStyle() {
-  if (params.fillLetters) {
-    fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  if (uiParams.fillLetters) {
+    fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
     noStroke();
   } else {
     noFill();
-    stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+    stroke(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
   }
   strokeWeight(1);
 }
@@ -226,8 +226,8 @@ function setLetterStyle() {
 // round the letter. waveFrequency is waves per turn, so whole numbers only.
 function waveOutwards(position, center, timeInSeconds) {
   const outwards = p5.Vector.sub(createVector(position.x, position.y), center);
-  const wave = sin(outwards.heading() * params.waveFrequency + timeInSeconds * WAVE_SPEED);
-  return outwards.setMag(wave * params.waveAmplitude);
+  const wave = sin(outwards.heading() * uiParams.waveFrequency + timeInSeconds * waveSpeed);
+  return outwards.setMag(wave * uiParams.waveAmplitude);
 }
 
 // The wave on every point, each from the middle of its own letter.
@@ -246,10 +246,10 @@ function waveLetters(letters, timeInSeconds) {
 }
 
 function noiseDrift(position, amount, timeInSeconds) {
-  const noiseX = position.x * NOISE_SCALE;
-  const noiseY = position.y * NOISE_SCALE;
+  const noiseX = position.x * noiseScale;
+  const noiseY = position.y * noiseScale;
   const driftX = noise(noiseX, noiseY, timeInSeconds);
-  const driftY = noise(noiseX, noiseY, timeInSeconds + NOISE_OFFSET_FOR_Y);
+  const driftY = noise(noiseX, noiseY, timeInSeconds + noiseOffsetForY);
   return {
     x: map(driftX, 0, 1, -amount, amount),
     y: map(driftY, 0, 1, -amount, amount),
@@ -257,19 +257,19 @@ function noiseDrift(position, amount, timeInSeconds) {
 }
 
 function drawOutlineShapes(timeInSeconds) {
-  const sampleFactor = params.sampleFrom === 'curves' ? OUTLINE_SHAPE_SAMPLE_FACTOR : params.sampleFactor;
-  const letters = textToLetterContours(currentFont, params.text, 0, 0, { sampleFactor });
+  const sampleFactor = uiParams.sampleFrom === 'curves' ? outlineShapeSampleFactor : uiParams.sampleFactor;
+  const letters = textToLetterContours(currentFont, uiParams.text, 0, 0, { sampleFactor });
   waveLetters(letters, timeInSeconds);
 
-  const offset = timeInSeconds * params.outlineShapeSpeed;
+  const offset = timeInSeconds * uiParams.outlineShapeSpeed;
 
   noFill();
-  stroke(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  stroke(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
   strokeWeight(1);
 
   for (const outline of letters.flat()) {
-    for (const spot of placeAlongOutline(outline, params.outlineShapeSpacing, offset)) {
-      circle(spot.x, spot.y, params.outlineShapeSize);
+    for (const spot of placeAlongOutline(outline, uiParams.outlineShapeSpacing, offset)) {
+      circle(spot.x, spot.y, uiParams.outlineShapeSize);
     }
   }
 }
@@ -280,31 +280,31 @@ window.windowResized = function windowResized() {
 
 // This template's controls, added below the shared ones from src/lib/gui.js.
 function addControls(gui) {
-  gui.add(params, 'animate');
+  gui.add(uiParams, 'animate');
 
   const sampleFromControl = gui
-    .add(params, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
+    .add(uiParams, 'sampleFrom', ['curves', 'textToContours', 'textToPoints'])
     .name('sample from');
 
-  const fillControl = gui.add(params, 'fillLetters').name('fill');
+  const fillControl = gui.add(uiParams, 'fillLetters').name('fill');
 
-  const sampleFactorControl = gui.add(params, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
+  const sampleFactorControl = gui.add(uiParams, 'sampleFactor', 0.02, 0.1, 0.01).name('sample factor');
 
-  gui.add(params, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
+  gui.add(uiParams, 'waveAmplitude', 0, 100, 1).name('wave amplitude');
 
-  gui.add(params, 'waveFrequency', 1, 12, 1).name('wave frequency');
+  gui.add(uiParams, 'waveFrequency', 1, 12, 1).name('wave frequency');
 
-  const handlesControl = gui.add(params, 'showHandles').name('curve handles');
+  const handlesControl = gui.add(uiParams, 'showHandles').name('curve handles');
 
-  const handleWobbleControl = gui.add(params, 'handleWobble', 0, 100, 1).name('handle wobble');
+  const handleWobbleControl = gui.add(uiParams, 'handleWobble', 0, 100, 1).name('handle wobble');
 
-  const outlineShapesControl = gui.add(params, 'showOutlineShapes').name('outline shapes');
+  const outlineShapesControl = gui.add(uiParams, 'showOutlineShapes').name('outline shapes');
 
-  const outlineShapeSizeControl = gui.add(params, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
+  const outlineShapeSizeControl = gui.add(uiParams, 'outlineShapeSize', 2, 100, 1).name('outline shape size');
 
-  const outlineShapeSpacingControl = gui.add(params, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
+  const outlineShapeSpacingControl = gui.add(uiParams, 'outlineShapeSpacing', 20, 300, 1).name('outline shape spacing');
 
-  const outlineShapeSpeedControl = gui.add(params, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
+  const outlineShapeSpeedControl = gui.add(uiParams, 'outlineShapeSpeed', 0, 400, 1).name('outline shape speed');
 
   const greyOutUnusedControls = (sampleFrom) => {
     fillControl.enable(sampleFrom !== 'textToPoints');
@@ -317,10 +317,10 @@ function addControls(gui) {
     outlineShapeSpeedControl.enable(sampleFrom !== 'textToPoints');
   };
   sampleFromControl.onChange(greyOutUnusedControls);
-  greyOutUnusedControls(params.sampleFrom);
+  greyOutUnusedControls(uiParams.sampleFrom);
 }
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ params, onFontChange: changeFont, addControls });
+createGUI({ params: uiParams, onFontChange: changeFont, addControls });
 new p5();
