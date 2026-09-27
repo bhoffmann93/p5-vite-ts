@@ -77,14 +77,14 @@ function drawModule(module, x, y, cellWidth, cellHeight) {
 
   if (module === 'square') {
     //the square fills the whole cell
-    const rectWidth = cellWidth;
-    const rectHeight = cellHeight;
+    let rectWidth = cellWidth;
+    let rectHeight = cellHeight;
     rect(x, y, rectWidth, rectHeight);
   }
 
   if (module === 'circle') {
-    const centerX = x + cellWidth / 2;
-    const centerY = y + cellHeight / 2;
+    let centerX = x + cellWidth / 2;
+    let centerY = y + cellHeight / 2;
 
     let diameter = min(cellWidth, cellHeight); //the largest circle that still fits inside the cell
     circle(centerX, centerY, diameter);
