@@ -22,7 +22,7 @@ import { gridSize, backgroundColor, foregroundColor } from './config.js';
 //
 // The colors start at whatever you set in src/config.js, and are { r, g, b }
 // objects, each channel a number from 0 to 255.
-const params = {
+const uiParams = {
   columns: 8,
   rows: 8,
   showGrid: true,
@@ -44,21 +44,23 @@ window.setup = function setup() {
 };
 
 window.draw = function draw() {
-  background(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b);
+  background(uiParams.backgroundColor.r, uiParams.backgroundColor.g, uiParams.backgroundColor.b);
 
-  const cellWidth = gridSize / params.columns;
-  const cellHeight = gridSize / params.rows;
+  const cellWidth = gridSize / uiParams.columns;
+  const cellHeight = gridSize / uiParams.rows;
 
   translate(gridLeft(), gridTop());
 
-  for (let row = 0; row < params.rows; row++) {
-    for (let column = 0; column < params.columns; column++) {
+  for (let row = 0; row < uiParams.rows; row++) {
+    for (let column = 0; column < uiParams.columns; column++) {
+      //the top left corner of this cell
       const x = column * cellWidth;
       const y = row * cellHeight;
 
       drawModule(grid[row][column], x, y, cellWidth, cellHeight);
 
-      if (params.showGrid) {
+      //draw grid lines
+      if (uiParams.showGrid) {
         noFill();
         stroke(gridLineColor.r, gridLineColor.g, gridLineColor.b);
         strokeWeight(1);
@@ -69,15 +71,23 @@ window.draw = function draw() {
 };
 
 function drawModule(module, x, y, cellWidth, cellHeight) {
+  const time = millis() / 1000.0; //in seconds
   noStroke();
-  fill(params.foregroundColor.r, params.foregroundColor.g, params.foregroundColor.b);
+  fill(uiParams.foregroundColor.r, uiParams.foregroundColor.g, uiParams.foregroundColor.b);
 
   if (module === 'square') {
-    rect(x, y, cellWidth, cellHeight);
+    //the square fills the whole cell
+    const rectWidth = cellWidth;
+    const rectHeight = cellHeight;
+    rect(x, y, rectWidth, rectHeight);
   }
 
   if (module === 'circle') {
-    ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth, cellHeight);
+    const centerX = x + cellWidth / 2;
+    const centerY = y + cellHeight / 2;
+
+    let diameter = min(cellWidth, cellHeight); //the largest circle that still fits inside the cell
+    circle(centerX, centerY, diameter);
   }
 }
 
@@ -94,15 +104,15 @@ window.mousePressed = function mousePressed(event) {
   //the control panel sits on top of the canvas, so clicks on it are ignored
   if (event.target.tagName !== 'CANVAS') return;
 
-  const cellWidth = gridSize / params.columns;
-  const cellHeight = gridSize / params.rows;
+  const cellWidth = gridSize / uiParams.columns;
+  const cellHeight = gridSize / uiParams.rows;
 
   //which cell the mouse is over, counted from the grid's top left corner
   const column = floor((mouseX - gridLeft()) / cellWidth);
   const row = floor((mouseY - gridTop()) / cellHeight);
 
   //clicks around the grid do nothing
-  if (column < 0 || column >= params.columns || row < 0 || row >= params.rows) return;
+  if (column < 0 || column >= uiParams.columns || row < 0 || row >= uiParams.rows) return;
 
   const nextIndex = (MODULES.indexOf(grid[row][column]) + 1) % MODULES.length;
   grid[row][column] = MODULES[nextIndex];
@@ -111,9 +121,9 @@ window.mousePressed = function mousePressed(event) {
 // Makes the grid match columns and rows, keeping the cells that are still there.
 function resizeGrid() {
   const resized = [];
-  for (let row = 0; row < params.rows; row++) {
+  for (let row = 0; row < uiParams.rows; row++) {
     resized[row] = [];
-    for (let column = 0; column < params.columns; column++) {
+    for (let column = 0; column < uiParams.columns; column++) {
       const cellExisted = row < grid.length && column < grid[row].length;
       resized[row][column] = cellExisted ? grid[row][column] : 'empty';
     }
@@ -132,14 +142,14 @@ window.windowResized = function windowResized() {
 
 // This template's controls, added below the shared ones from src/lib/gui.js.
 function addControls(gui) {
-  gui.add(params, 'columns', 1, 32, 1).onChange(resizeGrid);
-  gui.add(params, 'rows', 1, 32, 1).onChange(resizeGrid);
-  gui.add(params, 'showGrid').name('show grid');
+  gui.add(uiParams, 'columns', 1, 32, 1).onChange(resizeGrid);
+  gui.add(uiParams, 'rows', 1, 32, 1).onChange(resizeGrid);
+  gui.add(uiParams, 'showGrid').name('show grid');
   //a function on an object is how lil-gui makes a button
   gui.add({ clearGrid }, 'clearGrid').name('clear');
 }
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ params, addControls });
+createGUI({ params: uiParams, addControls });
 new p5();
