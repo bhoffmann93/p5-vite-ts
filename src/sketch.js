@@ -84,5 +84,5 @@ function addControls(gui) {
 
 // Builds the control panel, then starts p5. p5 looks for the setup() and
 // draw() you defined above and runs them.
-createGUI({ uiParams: uiParams, onFontChange: changeFont, addControls });
+createGUI({ params: uiParams, onFontChange: changeFont, addControls });
 new p5();
