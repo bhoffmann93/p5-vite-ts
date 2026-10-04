@@ -152,9 +152,14 @@ Two functions do the work:
 - `setup()` runs **once**, at the start.
 - `draw()` runs about **60 times a second**, forever. Animation lives here.
 
+Every p5 function, with examples, is in the
+[p5.js reference](https://p5js.org/reference/).
+
 To add your own control to the panel, add a value to `uiParams` in
 `src/sketch.js`, then add one line in `addControls()` at the bottom of that
 file. There are examples in the comments at the top of `src/lib/gui.js`.
+The panel is made with [lil-gui](https://lil-gui.georgealways.com); its
+documentation shows every kind of control you can add.
 
 The sketch runs in p5's **global mode**, which means you write `background()`
 and `width` exactly as you would in Processing or any p5 tutorial, with no
