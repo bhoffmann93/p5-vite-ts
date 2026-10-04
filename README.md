@@ -32,8 +32,8 @@ not the folder above it.
 
 The terminal is where you type commands to the computer.
 
-In VS Code: **Terminal → New Terminal** from the menu bar, or press
-<kbd>Ctrl</kbd> + <kbd>`</kbd> (the backtick key, above Tab on most keyboards).
+In VS Code: **Terminal → New Terminal** from the menu bar. The shortcut is
+shown next to it in the menu (on a US keyboard <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>`</kbd>).
 
 A panel opens at the bottom of the window. That's it.
 
