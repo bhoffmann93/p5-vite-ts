@@ -184,10 +184,10 @@ draws every curve so you can see what you're picking.
 
 ### p5 version 2
 
-This project uses p5.js **version 2**. Most tutorials and AI answers online
-are for version 1. Almost everything works the same. If you see `preload()`,
-that is version 1 and won't work here. When in doubt, check the
-[p5.js reference](https://p5js.org/reference/).
+This project uses p5.js **version 2**. Many tutorials online are for version 1.
+Almost everything works the same. If you see `preload()`, that is version 1
+and won't work here. When you ask an AI for help, tell it you use p5.js 2.0.
+When in doubt, check the [p5.js reference](https://p5js.org/reference/).
 
 You don't need any loading code for fonts: drop them into `fonts/` and pick
 them in the panel.
