@@ -175,38 +175,22 @@ always looks better than movement that doesn't.
 import { Easings } from './lib/easings.js';
 
 const t = (frameCount % 120) / 120;        // 0 -> 1, over 2 seconds
-const v = Easings.cubicInOut(t);
-textSize(lerp(20, 200, v));
+const eased = Easings.cubicInOut(t);
+textSize(lerp(20, 200, eased));
 ```
 
 The file's comments explain it properly, and [easings.net](https://easings.net)
 draws every curve so you can see what you're picking.
 
-### One thing that will trip you up
+### p5 version 2
 
-This project uses **p5.js version 2**. Most tutorials, books and AI answers
-online are written for **version 1**.
+This project uses p5.js **version 2**. Most tutorials and AI answers online
+are for version 1. Almost everything works the same. If you see `preload()`,
+that is version 1 and won't work here. When in doubt, check the
+[p5.js reference](https://p5js.org/reference/).
 
-The clearest sign is `preload()`. If you find code like this:
-
-```js
-function preload() {
-  font = loadFont('myfont.otf');   // version 1, will not work here
-}
-```
-
-…it won't work. In version 2 loading happens inside `setup()` with `await`:
-
-```js
-async function setup() {
-  font = await loadFont('myfont.otf');   // version 2
-}
-```
-
-Most other p5 code — `ellipse()`, `rect()`, `random()`, `noise()` and so on —
-is the same in both versions. It's really just loading that changed.
-
-The [p5.js reference](https://p5js.org/reference/) is the place to check.
+You don't need any loading code for fonts: drop them into `fonts/` and pick
+them in the panel.
 
 ---
 
