@@ -54,9 +54,8 @@ Then:
 npm run dev
 ```
 
-Your browser opens at `localhost:8080` and you should see the word
-**Type here** in the middle of a black screen, with a control panel in the
-corner.
+Your browser opens at `localhost:8080` and you should see the sketch, with a
+control panel in the corner.
 
 **Leave the terminal running.** As long as it is, every time you save a file
 the browser updates by itself. To stop it, click the terminal and press
@@ -76,6 +75,9 @@ the browser updates by itself. To stop it, click the terminal and press
 | **type color** | The color of the letters. Click the swatch for a picker. |
 | **background** | The color behind them.                                   |
 | **Export PNG** | Saves the canvas as an image.                            |
+
+Not every template has all of these, and each one adds its own controls below
+them.
 
 | Key          | What it does                   |
 | ------------ | ------------------------------ |
@@ -100,22 +102,21 @@ If a font you just added doesn't show up: stop the dev server
 
 ### Your project settings
 
-Open **`src/config.js`**. It holds the name your images are saved under and
-the colors the sketch opens with:
+Open **`src/config.js`**. It holds what the sketch starts with:
 
-```js
-export const screenshotName = 'my-poster';
-export const startingFont = 'Inter-Black';
-export const backgroundColor = { r: 0, g: 0, b: 0 };
-export const foregroundColor = { r: 255, g: 255, b: 255 };
-```
+- `screenshotName` is the name your exported images get.
+- `startingFont` is the font it opens with, so you are not picking it from the
+  dropdown every time you reload. Write it exactly as it appears in the
+  dropdown, which is the filename without `.otf` or `.ttf`.
+- `startingText` is the words it opens with.
+- `backgroundColor` and `foregroundColor` are the starting colors.
 
-`startingFont` is the font the sketch opens with, so you are not picking it
-from the dropdown every time you reload. Write it exactly as it appears in the
-dropdown, which is the filename without `.otf` or `.ttf`.
+Some templates add their own settings here, like `gridSize` in the grid
+template.
 
-Exported images are named after `screenshotName`, plus the date and time:
-`my-poster-260921-1408.png`. Two exports never overwrite each other.
+Exported images are named after `screenshotName`, plus the date and time, so
+`my-poster` becomes `my-poster-260921-1408.png`. Two exports never overwrite
+each other.
 
 Colors are written as **r, g, b** — red, green and blue, each from 0 to 255.
 So `{ r: 255, g: 0, b: 0 }` is red, and `{ r: 255, g: 255, b: 255 }` is white.
@@ -206,7 +207,8 @@ you installed it. Quit VS Code, reopen it, try again.
 
 **The browser shows a blank page** — look at the terminal. Errors there usually
 name the file and line. Also open the browser's console
-(<kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>Option</kbd> + <kbd>J</kbd>).
+(Mac: <kbd>Cmd</kbd> + <kbd>Option</kbd> + <kbd>J</kbd>, Windows:
+<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>J</kbd>).
 
 **A font doesn't load** — check the file really is `.otf` or `.ttf`, and
 restart `npm run dev`. If it appears in the dropdown but the type still looks
